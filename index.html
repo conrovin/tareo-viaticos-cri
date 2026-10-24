@@ -6,6 +6,7 @@
 <title>CRI – Control Tareo y Viáticos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.27.0/lib/msal-browser.min.js"></script>
 <style>
 :root{--bg:#eaf3ff;--bg1:#e4f0ff;--bg2:#f6f9fe;--sky1:#b5d9ff;--sky2:#cfe4ff;--glass:rgba(255,255,255,.74);--glassline:rgba(255,255,255,.9);--card:#fff;--field:#f3f7fc;--ink:#14213d;--mut:#6b7a99;--line:#e1e9f5;--acc:#1a7cff;--acc-ink:#fff;--accsoft:#e6f0ff;--shadow:0 22px 44px -26px rgba(30,90,180,.45),0 2px 8px rgba(30,90,180,.06);--err:#d92d20;--errbg:#fdecea;--warn:#8a5a00;--warnbg:#fff3d6;--ok:#12a150;--okbg:#e3f7ec;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -195,15 +196,15 @@ input[type=number],input[type=text],select{padding:8px 10px;font-size:.92rem}
 <div class="bigico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
 <div class="brandmark">CRI</div>
 <h1>Control Tareo y Viáticos</h1>
-<p class="mut">Inicie sesión con su cuenta de Microsoft de la empresa para guardar el tareo y los viáticos en SharePoint. También puede continuar sin conexión y usar solo el procesamiento local.</p>
+<p class="mut">Inicie sesión con su cuenta de Microsoft de la empresa para guardar el tareo y los viáticos en una carpeta de OneDrive. También puede continuar sin conexión y usar solo el procesamiento local.</p>
 <div class="row">
 <button id="sp-login" type="button">Iniciar sesión con Microsoft</button>
 <button id="sp-logout" type="button" class="sec hide">Cerrar sesión</button>
 <span id="sp-user" class="mut">Sin conexión</span>
 </div>
 <div class="row" style="margin-top:10px">
-<label>URL del sitio de SharePoint <input id="sp-site" type="text" placeholder="https://empresa.sharepoint.com/sites/NombreSitio" style="width:min(460px,100%)"></label>
-<button id="sp-check" type="button" class="sec" disabled>Verificar listas y columnas</button>
+<label>Enlace de la carpeta de OneDrive <input id="sp-site" type="text" placeholder="https://empresa-my.sharepoint.com/:f:/g/personal/…" style="width:min(460px,100%)"></label>
+<button id="sp-check" type="button" class="sec" disabled>Verificar carpeta</button>
 </div>
 <p id="sp-note" class="mut"></p>
 <div class="row" style="margin-top:6px"><button id="sp-go" type="button" disabled>Continuar</button><button id="sp-skip" type="button" class="sec">Continuar sin conexión</button></div>
@@ -223,6 +224,7 @@ input[type=number],input[type=text],select{padding:8px 10px;font-size:.92rem}
 <button id="apply" class="sec" type="button">Aplicar</button>
 </div>
 <div class="row" style="margin-top:12px"><span class="mut">¿Tiene una sesión guardada?</span><label class="btn sec">Abrir sesión<input id="ses" type="file" accept=".json"></label><span class="mut" id="sesnote"></span></div>
+<div class="row" style="margin-top:12px"><span class="mut">¿Mes guardado en OneDrive?</span><select id="od-list" aria-label="Meses guardados en OneDrive"><option value="">(conéctese y presione Actualizar lista)</option></select><button id="od-open" type="button" class="sec">Abrir mes</button><button id="od-refresh" type="button" class="sec">Actualizar lista</button></div>
 <div id="msgs"></div>
 </section>
 
@@ -238,7 +240,7 @@ input[type=number],input[type=text],select{padding:8px 10px;font-size:.92rem}
 <span class="mut" id="dlnote"></span>
 </div>
 </section>
-<section id="via" class="process-window hide"><h2>3. Viáticos del mes</h2><div class="row"><button id="gs" class="sec" type="button">Guardar sesión</button><label><input type="checkbox" id="incs" checked> Incluir sueldos en la sesión</label></div><p class="mut">Los importes automáticos no se modifican. Si cambia un importe final, escriba el motivo. Key Person, grupo, procedencia y status de tarjeta se guardan en este navegador y se repiten cada mes hasta que usted los cambie.</p><div class="row" style="margin-bottom:10px"><label class="btn">Cargar sueldos (Excel)<input id="sal" type="file" accept=".xlsx,.xls,.csv"></label><span class="mut" id="salnote">Dos columnas: DNI y Sueldo. Solo se usa para calcular la alimentación a planilla (20 % del sueldo).</span></div><div class="kpis" id="vsum"><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></span>Alimentación</div><div class="kv" id="k_ali">S/ 0.00</div><div class="kd" id="d_ali">Sin ajustes</div></div><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>Alojamiento</div><div class="kv" id="k_alo">S/ 0.00</div><div class="kd" id="d_alo">Sin ajustes</div></div><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>Movilidad</div><div class="kv" id="k_mov">S/ 0.00</div><div class="kd" id="d_mov">Sin ajustes</div></div><div class="kpi hl"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Total a pagar</div><div class="kv" id="k_tot">S/ 0.00</div><div class="kd" id="d_tot">Sin ajustes</div></div></div><div class="concept-tabs" role="tablist" aria-label="Conceptos de viáticos"><button type="button" data-concept="ali" role="tab" aria-selected="true">Alimentación</button><button type="button" data-concept="alo" role="tab" aria-selected="false">Alojamiento</button><button type="button" data-concept="mov" role="tab" aria-selected="false">Movilidad</button></div><p class="mut" id="concept-note">Concepto activo: Alimentación. Use las pestañas para revisar cada concepto por separado.</p><div class="wrap" style="max-height:480px"><table id="vt" class="tab-ali"></table></div><div class="row" style="margin-top:12px"><button id="xl" type="button">Descargar Excel de viáticos</button><button id="tx" type="button">Descargar los 3 TXT de viáticos</button><span class="mut" id="xlnote"></span></div><div class="row" style="margin-top:12px"><label>Estado del mes <select id="sp-estado"><option>Abierto</option><option>En revisión</option><option>Cerrado</option></select></label><label>Responsable <input id="sp-resp" type="text" style="width:180px" placeholder="Nombre"></label><button id="sp-save" type="button">Guardar en SharePoint</button><span class="mut" id="sp-savenote"></span></div></section>
+<section id="via" class="process-window hide"><h2>3. Viáticos del mes</h2><div class="row"><button id="gs" class="sec" type="button">Guardar sesión</button><label><input type="checkbox" id="incs" checked> Incluir sueldos en la sesión</label></div><p class="mut">Los importes automáticos no se modifican. Si cambia un importe final, escriba el motivo. Key Person, grupo, procedencia y status de tarjeta se guardan en este navegador y se repiten cada mes hasta que usted los cambie.</p><div class="row" style="margin-bottom:10px"><label class="btn">Cargar sueldos (Excel)<input id="sal" type="file" accept=".xlsx,.xls,.csv"></label><span class="mut" id="salnote">Dos columnas: DNI y Sueldo. Solo se usa para calcular la alimentación a planilla (20 % del sueldo).</span></div><div class="kpis" id="vsum"><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></span>Alimentación</div><div class="kv" id="k_ali">S/ 0.00</div><div class="kd" id="d_ali">Sin ajustes</div></div><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>Alojamiento</div><div class="kv" id="k_alo">S/ 0.00</div><div class="kd" id="d_alo">Sin ajustes</div></div><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>Movilidad</div><div class="kv" id="k_mov">S/ 0.00</div><div class="kd" id="d_mov">Sin ajustes</div></div><div class="kpi hl"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Total a pagar</div><div class="kv" id="k_tot">S/ 0.00</div><div class="kd" id="d_tot">Sin ajustes</div></div></div><div class="concept-tabs" role="tablist" aria-label="Conceptos de viáticos"><button type="button" data-concept="ali" role="tab" aria-selected="true">Alimentación</button><button type="button" data-concept="alo" role="tab" aria-selected="false">Alojamiento</button><button type="button" data-concept="mov" role="tab" aria-selected="false">Movilidad</button></div><p class="mut" id="concept-note">Concepto activo: Alimentación. Use las pestañas para revisar cada concepto por separado.</p><div class="wrap" style="max-height:480px"><table id="vt" class="tab-ali"></table></div><div class="row" style="margin-top:12px"><button id="xl" type="button">Descargar Excel de viáticos</button><button id="tx" type="button">Descargar los 3 TXT de viáticos</button><span class="mut" id="xlnote"></span></div><div class="row" style="margin-top:12px"><label>Estado del mes <select id="sp-estado"><option>Abierto</option><option>En revisión</option><option>Cerrado</option></select></label><label>Responsable <input id="sp-resp" type="text" style="width:180px" placeholder="Nombre"></label><button id="sp-save" type="button">Guardar en OneDrive</button><span class="mut" id="sp-savenote"></span></div></section>
 </div></div>
 </main>
 
@@ -469,8 +471,9 @@ $('xl').addEventListener('click',function(){
  var n=$('xlnote');
  var f=ROWS.filter(function(r){var a=ADJ[r.w.dni];return hasAdj(a)&&!(a.motivo||'').trim()});
  if(f.length){n.textContent='Escriba el motivo del ajuste de '+f.length+' trabajador(es) antes de descargar.';return}
- var wb=buildWorkbook(XLSX,ROWS,fin,pl,ADJ,function(r){return SALLOAD?SAL[nk(r.w.dni)]:undefined});
- saveFile('Viaticos_'+state.anio+'-'+p2(state.mes+1)+'.xlsx',XLSX.write(wb,{type:'array',bookType:'xlsx'}),n);
+ var wb=buildWorkbook(XLSX,ROWS,fin,pl,ADJ,function(r){return SALLOAD?SAL[nk(r.w.dni)]:undefined},MESES[state.mes]+' '+state.anio,curUser());
+ var arr=XLSX.write(wb,{type:'array',bookType:'xlsx'}),nm='Viaticos_'+state.anio+'-'+p2(state.mes+1)+'.xlsx';
+ patchXlsx(arr,wb._cfg).then(function(o){saveFile(nm,o,n)},function(){saveFile(nm,arr,n)});
 });
 var SAL={},SALLOAD=false;
 function nk(d){return String(d).replace(/^0+/,'')}
@@ -493,29 +496,35 @@ $('sal').addEventListener('change',function(e){
  }catch(x){n.textContent='No se pudo leer el archivo: '+x.message}};
  rd.readAsArrayBuffer(f);
 });
-function buildWorkbook(X,ROWS,fin,pl,ADJ,salOf,mesTxt){
- var FN='Aptos Narrow',SZ=9;
- var BD={top:{style:'thin'},bottom:{style:'thin'},left:{style:'thin'},right:{style:'thin'}};
- var HS={font:{name:FN,sz:SZ,bold:true},alignment:{horizontal:'center',vertical:'center',wrapText:true},border:BD,fill:{patternType:'solid',fgColor:{rgb:'D9E1F2'}}};
- var BS={font:{name:FN,sz:SZ}},TS={font:{name:FN,sz:SZ,bold:true}};
+function buildWorkbook(X,ROWS,fin,pl,ADJ,salOf,mesTxt,usuario){
+ var FN='Aptos Narrow',SZ=10,NAVY='1F4E8C',BAND='DCE6F4',ZEB='F5F8FD',GR='D4DBE6',MUT='6B7A99';
+ function bd(col,st){var o={style:st||'thin',color:{rgb:col}};return {top:o,bottom:o,left:o,right:o}}
+ var BDH=bd(NAVY),BDB=bd(GR),MED={style:'medium',color:{rgb:NAVY}},BDT={top:MED,bottom:MED};
+ var HS={font:{name:FN,sz:SZ,bold:true,color:{rgb:'FFFFFF'}},alignment:{horizontal:'center',vertical:'center',wrapText:true},border:BDH,fill:{patternType:'solid',fgColor:{rgb:NAVY}}};
+ var BS={font:{name:FN,sz:SZ}},TS={font:{name:FN,sz:SZ,bold:true},fill:{patternType:'solid',fgColor:{rgb:BAND}},border:BDT};
  var MON='_-"S/"\\ * #,##0.00_-;\\-"S/"\\ * #,##0.00_-;_-"S/"\\ * "-"??_-;_-@_-',NUM='0.00',DT='dd/mm/yyyy';
- var GK={'COSTODETERMINADO':'Costo Determinado','FEE':'Fee','FEE-RECUPERACION':'Fee - Recuperaci\u00f3n','EC-TOPOGRAFIA':'Evento Compensable'};
- var GRUPOS=['Costo Determinado','Evento Compensable','Fee','Fee - Recuperaci\u00f3n','Por definir'];
- function grp(w){if(w.grupo)return w.grupo;var k=String(w.cci||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'');return GK[k]||'Por definir'}
+ var GK={'COSTODETERMINADO':'Costo Determinado','FEE':'Fee','FEE-RECUPERACION':'Fee - Recuperación','EC-TOPOGRAFIA':'Evento Compensable'};
+ var GRUPOS=['Costo Determinado','Evento Compensable','Fee','Fee - Recuperación','Por definir'];
+ function grp(w){if(w.grupo)return w.grupo;var k=String(w.cci||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'');return GK[k]||'Por definir'}
  function ser(d){return d?Math.round((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(1899,11,30))/86400000):null}
  function c(v,o){o=o||{};if(v===null||v===undefined||v==='')return o.f?{t:'s',v:'',f:o.f,s:o.s||BS}:{t:'s',v:'',s:o.s||BS};
   var x={t:typeof v==='number'?'n':'s',v:v,s:o.s||BS};if(o.z)x.z=o.z;if(o.f)x.f=o.f;return x}
  function cv(v,f,z){return c(v,{f:f,z:z})}
+ var CEN=['Itm','Código','Documento','DNI','Fec.Ing.','Status Tarjeta','Días','Dscto/Reint','Total Días','Condición','Concepto'];
  function sheet(head,body,widths,foot){
   var aoa=[head.map(function(h){return {t:'s',v:h,s:HS}})].concat(body);
   var ws={},R=aoa.length;
-  aoa.forEach(function(row,r){row.forEach(function(cell,cc){if(cell)ws[X.utils.encode_cell({r:r,c:cc})]=cell})});
+  aoa.forEach(function(row,r){row.forEach(function(cell,cc){if(!cell)return;
+   if(r>0){var st=Object.assign({},cell.s||BS);st.border=BD_B();if(r%2===0)st.fill={patternType:'solid',fgColor:{rgb:ZEB}};if(CEN.indexOf(head[cc])>=0)st.alignment={horizontal:'center'};cell.s=st}
+   ws[X.utils.encode_cell({r:r,c:cc})]=cell})});
   var last=R;
-  if(foot){foot(ws,R+1);last=R+1}
+  if(foot){foot(ws,R+1);last=R+1;for(var k=0;k<head.length;k++){var key=X.utils.encode_cell({r:R,c:k});if(!ws[key])ws[key]={t:'s',v:'',s:TS}}}
   ws['!ref']=X.utils.encode_range({s:{r:0,c:0},e:{r:last-1,c:head.length-1}});
-  ws['!cols']=widths.map(function(w){return {wch:w}});ws['!rows']=[{hpt:28}];
+  ws['!cols']=widths.map(function(w){return {wch:w}});ws['!rows']=[{hpt:42}];
   ws['!autofilter']={ref:X.utils.encode_range({s:{r:0,c:0},e:{r:R-1,c:head.length-1}})};
+  ws['!margins']={left:.4,right:.4,top:.75,bottom:.6,header:.3,footer:.3};
   return ws}
+ function BD_B(){return BDB}
  function put(ws,r,cc,cell){ws[X.utils.encode_cell({r:r-1,c:cc})]=cell}
  function id(i){return ('0000'+(i+1)).slice(-4)}
  function base(r,i){var w=r.w;return [c(id(i),{z:'@'}),c(w.dni,{z:'@'}),c(w.nom),c(w.cargo),c(w.cci),c(grp(w)),c(w.proc||'')]}
@@ -524,57 +533,95 @@ function buildWorkbook(X,ROWS,fin,pl,ADJ,salOf,mesTxt){
      L=ROWS.filter(function(r){return r.alo>0||fin(r,'alo')>0}),
      M=ROWS.filter(function(r){return r.mov>0||fin(r,'mov')>0});
  var sumG={ali:{},alo:{},mov:{}};GRUPOS.forEach(function(g){sumG.ali[g]=0;sumG.alo[g]=0;sumG.mov[g]=0});
- var wsA=sheet(['Itm','C\u00f3digo','Nombre del Trabajador','Cargo','Centro de Costo','Grupo','Procedencia','Fec.Ing.','Status Tarjeta','D\u00edas','Dscto/Reint','Total D\u00edas','Monto alimentaci\u00f3n d\u00eda','Sueldo','Monto M\u00e1x. Perm. (20%)','Monto por alimentaci\u00f3n','Ajuste','Monto a abonar','Recarga tarjeta PROVIS','Monto en RC (exceso 20%)'],
+ var wsA=sheet(['Itm','Código','Nombre del Trabajador','Cargo','Centro de Costo','Grupo','Procedencia','Fec.Ing.','Status Tarjeta','Días','Dscto/Reint','Total Días','Monto alimentación día','Sueldo','Monto Máx. Perm. (20%)','Monto por alimentación','Ajuste','Monto a abonar','Recarga tarjeta PROVIS','Monto en RC (exceso 20%)'],
   A.map(function(r,i){var n=i+2,sal=salOf(r),f=fin(r,'ali'),p=pl(r),pa=r.dias*r.tA;
    sumG.ali[grp(r.w)]+=f;
    return base(r,i).concat([dt(r.w),c(r.w.stat||''),c(r.dias,{z:NUM}),c(0,{z:NUM}),cv(r.dias,'J'+n+'+K'+n,NUM),c(r.tA,{z:NUM}),c(sal==null?'':sal,{z:'#,##0.00'}),
     cv(sal==null?0:Math.round(sal*20)/100,'N'+n+'*0.2','#,##0.00'),cv(pa,'L'+n+'*M'+n,MON),c(Math.round((f-pa)*100)/100,{z:'#,##0.00'}),cv(f,'P'+n+'+Q'+n,MON),
     cv(p==null?'':p,'IF(N'+n+'="","",IF(R'+n+'>O'+n+',O'+n+',R'+n+'))','#,##0.00'),cv(p==null?'':Math.round((f-p)*100)/100,'IF(S'+n+'="","",R'+n+'-S'+n+')','#,##0.00')])}),
-  [5,9,32,28,18,17,11,10,9,7,8,8,10,10,11,13,9,13,13,13],
-  function(ws,r){var e=A.length+1,t=0,s=0,rc=0,pp=0,q=0;A.forEach(function(x){var f=fin(x,'ali'),p=pl(x);t+=f;pp+=x.dias*x.tA;if(p!=null){s+=p;rc+=f-p}});
-   put(ws,r,14,c('TOTAL A PAGAR',{s:TS}));put(ws,r,15,c(pp,{f:'SUM(P2:P'+e+')',z:MON,s:TS}));put(ws,r,17,c(t,{f:'SUM(R2:R'+e+')',z:MON,s:TS}));put(ws,r,18,c(s,{f:'SUM(S2:S'+e+')',z:MON,s:TS}));put(ws,r,19,c(Math.round(rc*100)/100,{f:'SUM(T2:T'+e+')',z:MON,s:TS}))});
- var wsL=sheet(['Itm','Documento','Nombre del Trabajador','Cargo','Centro de Costo','Grupo','Procedencia','Fec.Ing.','D\u00edas','Dscto/Reint','Total D\u00edas','Monto alojamiento d\u00eda','Monto por alojamiento','Ajuste','Monto a abonar'],
+  [6,10,34,28,23,19,13,11,10,7,9,8,11,11,12,14,10,14,14,14],
+  function(ws,r){var e=A.length+1,t=0,s=0,rc=0,pp=0;A.forEach(function(x){var f=fin(x,'ali'),p=pl(x);t+=f;pp+=x.dias*x.tA;if(p!=null){s+=p;rc+=f-p}});
+   put(ws,r,13,c('TOTAL A PAGAR',{s:TS}));put(ws,r,15,c(pp,{f:'SUM(P2:P'+e+')',z:MON,s:TS}));put(ws,r,17,c(t,{f:'SUM(R2:R'+e+')',z:MON,s:TS}));put(ws,r,18,c(s,{f:'SUM(S2:S'+e+')',z:MON,s:TS}));put(ws,r,19,c(Math.round(rc*100)/100,{f:'SUM(T2:T'+e+')',z:MON,s:TS}))});
+ var wsL=sheet(['Itm','Documento','Nombre del Trabajador','Cargo','Centro de Costo','Grupo','Procedencia','Fec.Ing.','Días','Dscto/Reint','Total Días','Monto alojamiento día','Monto por alojamiento','Ajuste','Monto a abonar'],
   L.map(function(r,i){var n=i+2,f=fin(r,'alo');sumG.alo[grp(r.w)]+=f;var fijo=r.alo>0&&r.tL>0&&r.alo!==r.dias*r.tL;
    return base(r,i).concat([dt(r.w),c(r.dias,{z:NUM}),c(0,{z:NUM}),cv(r.dias,'I'+n+'+J'+n,NUM),c(r.tL,{z:NUM}),fijo?c(r.alo,{z:MON}):cv(r.alo,'K'+n+'*L'+n,MON),c(Math.round((f-r.alo)*100)/100,{z:'#,##0.00'}),cv(f,'SUM(M'+n+':N'+n+')',MON)])}),
-  [5,9,32,28,18,17,11,10,7,8,8,11,13,9,13],
+  [6,10,34,28,23,19,13,11,8,9,9,13,15,11,15],
   function(ws,r){var e=L.length+1,a=0,t=0;L.forEach(function(x){a+=x.alo;t+=fin(x,'alo')});
    put(ws,r,11,c('TOTAL A PAGAR',{s:TS}));put(ws,r,12,c(a,{f:'SUM(M2:M'+e+')',z:MON,s:TS}));put(ws,r,14,c(t,{f:'SUM(O2:O'+e+')',z:MON,s:TS}))});
- var wsM=sheet(['Itm','Documento','Nombre del Trabajador','Cargo','Centro de Costo','Grupo','Procedencia','Fec.Ing.','Condici\u00f3n','Monto'],
+ var wsM=sheet(['Itm','Documento','Nombre del Trabajador','Cargo','Centro de Costo','Grupo','Procedencia','Fec.Ing.','Condición','Monto'],
   M.map(function(r,i){var f=fin(r,'mov');sumG.mov[grp(r.w)]+=f;return base(r,i).concat([dt(r.w),c(r.w.cond),c(f,{z:MON})])}),
-  [5,9,32,28,18,17,11,10,13,13],
+  [6,10,34,28,23,19,13,11,14,15],
   function(ws,r){var e=M.length+1,t=0;M.forEach(function(x){t+=fin(x,'mov')});put(ws,r,8,c('TOTAL A PAGAR',{s:TS}));put(ws,r,9,c(t,{f:'SUM(J2:J'+e+')',z:MON,s:TS}))});
+ /* Resumen */
  var gs=GRUPOS.filter(function(g){return g!=='Por definir'||sumG.ali[g]||sumG.alo[g]||sumG.mov[g]});
- var wsR={},P=[['Alimentaci\u00f3n',1,'Alimentaci\u00f3n',A.length+1,'R','ali'],['Alojamiento',4,'Alojamiento',L.length+1,'O','alo'],['Movilidad',7,'Movilidad',M.length+1,'J','mov']];
- P.forEach(function(p){var c0=p[1];
-  wsR[X.utils.encode_cell({r:2,c:c0})]=c(p[0],{s:HS});wsR[X.utils.encode_cell({r:2,c:c0+1})]=c('',{s:HS});
-  wsR[X.utils.encode_cell({r:4,c:c0})]=c('Grupo',{s:HS});wsR[X.utils.encode_cell({r:4,c:c0+1})]=c('Monto',{s:HS});
-  var tot=0;
-  gs.forEach(function(g,k){var rr=6+k,v=sumG[p[5]][g];tot+=v;
-   wsR[X.utils.encode_cell({r:rr-1,c:c0})]=c(g);
-   wsR[X.utils.encode_cell({r:rr-1,c:c0+1})]=c(v,{f:"SUMIF('"+p[2]+"'!$F$2:$F$"+p[3]+","+X.utils.encode_cell({r:rr-1,c:c0})+",'"+p[2]+"'!$"+p[4]+"$2:$"+p[4]+"$"+p[3]+")",z:MON})});
-  var rt=6+gs.length;
-  wsR[X.utils.encode_cell({r:rt-1,c:c0})]=c('Total general',{s:TS});
-  wsR[X.utils.encode_cell({r:rt-1,c:c0+1})]=c(tot,{f:'SUM('+X.utils.encode_cell({r:5,c:c0+1})+':'+X.utils.encode_cell({r:rt-2,c:c0+1})+')',z:MON,s:TS})});
- wsR['!ref']='A1:J'+(6+gs.length);wsR['!merges']=[{s:{r:2,c:1},e:{r:2,c:2}},{s:{r:2,c:4},e:{r:2,c:5}},{s:{r:2,c:7},e:{r:2,c:8}}];
- wsR['!cols']=[4,20,13,3,20,13,3,20,13].map(function(w){return {wch:w}});
- var H2=['DNI','Nombres','Concepto','Importe autom\u00e1tico','Importe final','Motivo','Usuario','Fecha del cambio'],aj=[];
+ var wsR={},P=[['Alimentación','B',A.length+1,'R','ali'],['Alojamiento','C',L.length+1,'O','alo'],['Movilidad','D',M.length+1,'J','mov']];
+ var now=new Date(),fecha=p2(now.getDate())+'/'+p2(now.getMonth()+1)+'/'+now.getFullYear()+' '+p2(now.getHours())+':'+p2(now.getMinutes());
+ var T1={font:{name:FN,sz:16,bold:true,color:{rgb:NAVY}}},T2={font:{name:FN,sz:12,bold:true}},T3={font:{name:FN,sz:9,color:{rgb:MUT}}};
+ wsR.A1=c('CRI – Control Tareo y Viáticos',{s:T1});wsR.A2=c('Resumen de viáticos – '+mesTxt,{s:T2});
+ wsR.A3=c('Generado: '+fecha+(usuario?' · Usuario: '+usuario:''),{s:T3});
+ ['Grupo','Alimentación','Alojamiento','Movilidad','Total general'].forEach(function(h,i){wsR[X.utils.encode_cell({r:4,c:i})]=c(h,{s:HS})});
+ var cg={A:0,B:0,C:0,D:0},tot={ali:0,alo:0,mov:0},bb={font:{name:FN,sz:SZ},border:BDB};
+ gs.forEach(function(g,k){var rr=6+k;
+  wsR['A'+rr]=c(g,{s:bb});var rowT=0;
+  P.forEach(function(p){var v=sumG[p[4]][g];tot[p[4]]+=v;rowT+=v;
+   wsR[p[1]+rr]=c(v,{f:"SUMIF('"+p[0]+"'!$F$2:$F$"+p[2]+",$A"+rr+",'"+p[0]+"'!$"+p[3]+"$2:$"+p[3]+"$"+p[2]+")",z:MON,s:bb})});
+  wsR['E'+rr]=c(rowT,{f:'SUM(B'+rr+':D'+rr+')',z:MON,s:bb})});
+ var rt=6+gs.length,grand=tot.ali+tot.alo+tot.mov;
+ wsR['A'+rt]=c('Total general',{s:TS});
+ P.forEach(function(p){wsR[p[1]+rt]=c(tot[p[4]],{f:'SUM('+p[1]+'6:'+p[1]+(rt-1)+')',z:MON,s:TS})});
+ wsR['E'+rt]=c(grand,{f:'SUM(E6:E'+(rt-1)+')',z:MON,s:TS});
+ var sumAdj={ali:0,alo:0,mov:0},con=0;
+ ROWS.forEach(function(r){var a=ADJ[r.w.dni];if(a)['ali','alo','mov'].forEach(function(k){if(a[k]!=null)sumAdj[k]+=a[k]});if(r.ali>0||r.alo>0||r.mov>0||fin(r,'ali')>0||fin(r,'alo')>0||fin(r,'mov')>0)con++});
+ var r1=rt+2,r2=rt+3,lab={font:{name:FN,sz:SZ,color:{rgb:MUT}},border:BDB};
+ wsR['A'+r1]=c('N.º de trabajadores con monto',{s:lab});wsR['A'+r2]=c('Ajustes manuales incluidos',{s:lab});
+ var cnt=[A.length,L.length,M.length];
+ P.forEach(function(p,i){wsR[p[1]+r1]=c(cnt[i],{z:'0',s:{font:{name:FN,sz:SZ},border:BDB,alignment:{horizontal:'right'}}});
+  wsR[p[1]+r2]=c(Math.round(sumAdj[p[4]]*100)/100,{z:MON,s:bb})});
+ wsR['E'+r1]=c(con,{z:'0',s:{font:{name:FN,sz:SZ},border:BDB,alignment:{horizontal:'right'}}});
+ wsR['E'+r2]=c(Math.round((sumAdj.ali+sumAdj.alo+sumAdj.mov)*100)/100,{z:MON,s:bb});
+ wsR['A'+(r2+2)]=c('Los montos son los importes finales (automático + ajuste manual) de cada concepto.',{s:T3});
+ wsR['!ref']='A1:E'+(r2+2);wsR['!cols']=[32,17,17,17,19].map(function(w){return {wch:w}});
+ wsR['!rows']=[{hpt:26},{hpt:20},{hpt:14},{hpt:8},{hpt:30}];
+ wsR['!margins']={left:.5,right:.5,top:.75,bottom:.6,header:.3,footer:.3};
+ /* Ajustes manuales */
+ var H2=['DNI','Nombres','Concepto','Importe automático','Importe final','Motivo','Usuario','Fecha del cambio'],aj=[];
  ROWS.forEach(function(r){var a=ADJ[r.w.dni];if(!a||(a.ali==null&&a.alo==null&&a.mov==null))return;
-  [['ali','Alimentaci\u00f3n'],['alo','Alojamiento'],['mov','Movilidad']].forEach(function(p){if(a[p[0]]!=null)aj.push([c(r.w.dni,{z:'@'}),c(r.w.nom),c(p[1]),c(r[p[0]],{z:NUM}),c(a[p[0]],{z:NUM}),c(a.motivo||''),c(a.usuario||''),c(a.fecha||'')])})});
- var wsJ=sheet(H2,aj,[10,32,14,12,12,36,16,20]);
+  [['ali','Alimentación'],['alo','Alojamiento'],['mov','Movilidad']].forEach(function(p){if(a[p[0]]!=null)aj.push([c(r.w.dni,{z:'@'}),c(r.w.nom),c(p[1]),c(r[p[0]],{z:'#,##0.00'}),c(fin(r,p[0]),{z:'#,##0.00'}),c(a.motivo||''),c(a.usuario||''),c(a.fecha||'')])})});
+ if(!aj.length)aj.push([c('Sin ajustes manuales en este periodo',{s:{font:{name:FN,sz:SZ,italic:true,color:{rgb:MUT}}}})]);
+ var wsJ=sheet(H2,aj,[12,34,15,15,15,40,20,22]);
  var wb=X.utils.book_new();
- X.utils.book_append_sheet(wb,wsR,'Resumen');X.utils.book_append_sheet(wb,wsA,'Alimentaci\u00f3n');X.utils.book_append_sheet(wb,wsL,'Alojamiento');X.utils.book_append_sheet(wb,wsM,'Movilidad');X.utils.book_append_sheet(wb,wsJ,'Ajustes manuales');
+ X.utils.book_append_sheet(wb,wsR,'Resumen');X.utils.book_append_sheet(wb,wsA,'Alimentación');X.utils.book_append_sheet(wb,wsL,'Alojamiento');X.utils.book_append_sheet(wb,wsM,'Movilidad');X.utils.book_append_sheet(wb,wsJ,'Ajustes manuales');
+ wb.Workbook={Names:['Alimentación','Alojamiento','Movilidad','Ajustes manuales'].map(function(n,i){return {Name:'_xlnm.Print_Titles',Ref:"'"+n+"'!$1:$1",Sheet:i+1}})};
+ wb._cfg={mes:mesTxt,fecha:fecha,sheets:[{n:'Resumen',tab:'1F4E8C',fx:0,grid:false},{n:'Alimentación',tab:'2E9E6B',fx:3},{n:'Alojamiento',tab:'1A7CFF',fx:3},{n:'Movilidad',tab:'F2994A',fx:3},{n:'Ajustes manuales',tab:'8E8E93',fx:2}]};
  return wb}
+function patchXlsx(arr,cfg){
+ if(!window.JSZip)return Promise.resolve(arr);
+ function xe(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+ return JSZip.loadAsync(arr).then(function(z){
+  var jobs=cfg.sheets.map(function(sh,i){
+   var path='xl/worksheets/sheet'+(i+1)+'.xml',f=z.file(path);if(!f)return null;
+   return f.async('string').then(function(x){
+    x=x.replace(/(<worksheet[^>]*>)/,'$1<sheetPr><tabColor rgb="FF'+sh.tab+'"/><pageSetUpPr fitToPage="1"/></sheetPr>');
+    var tl=String.fromCharCode(65+sh.fx)+'2';
+    var sv='<sheetViews><sheetView'+(sh.grid===false?' showGridLines="0"':'')+' workbookViewId="0">'+(sh.fx?'<pane xSplit="'+sh.fx+'" ySplit="1" topLeftCell="'+tl+'" activePane="bottomRight" state="frozen"/><selection pane="topRight"/><selection pane="bottomLeft"/><selection pane="bottomRight" activeCell="'+tl+'" sqref="'+tl+'"/>':'')+'</sheetView></sheetViews>';
+    x=x.replace(/<sheetViews>[\s\S]*?<\/sheetViews>/,sv);
+    var hf='<pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/><headerFooter><oddHeader>&amp;L&amp;9CRI – Control Tareo y Viáticos&amp;C&amp;9'+xe(sh.n)+'&amp;R&amp;9'+xe(cfg.mes)+'</oddHeader><oddFooter>&amp;L&amp;9Generado: '+xe(cfg.fecha)+'&amp;R&amp;9Página &amp;P de &amp;N</oddFooter></headerFooter>';
+    x=x.replace(/(<pageMargins[^>]*\/>)/,'$1'+hf);
+    z.file(path,x);
+   });
+  }).filter(Boolean);
+  return Promise.all(jobs).then(function(){return z.generateAsync({type:'uint8array',compression:'DEFLATE'})});
+ });
+}
 
+function sessObj(withSal){return {v:1,mes:state.mes,anio:state.anio,workers:state.workers.map(function(w){return {dni:w.dni,nom:w.nom,cargo:w.cargo,cci:w.cci,cc:w.cc,proy:w.proy,cond:w.cond,ing:w.ing?w.ing.getTime():null,mk:w.mk}}),lines:state.lines,errs:state.errs,omit:state.omit,adj:ADJ,kp:ld(),attr:ld('attr'),sal:(withSal&&SALLOAD)?SAL:null,usuario:curUser(),estado:$('sp-estado').value,resp:$('sp-resp').value}}
 $('gs').addEventListener('click',function(){
  var n=$('xlnote');if(!state||!state.workers){n.textContent='Cargue primero un Excel.';return}
- var o={v:1,mes:state.mes,anio:state.anio,workers:state.workers.map(function(w){return {dni:w.dni,nom:w.nom,cargo:w.cargo,cci:w.cci,cc:w.cc,proy:w.proy,cond:w.cond,ing:w.ing?w.ing.getTime():null,mk:w.mk}}),lines:state.lines,errs:state.errs,omit:state.omit,adj:ADJ,kp:ld(),attr:ld('attr'),sal:($('incs').checked&&SALLOAD)?SAL:null,usuario:curUser()};
+ var o=sessObj($('incs').checked);
  saveFile('Sesion_Viaticos_'+state.anio+'-'+p2(state.mes+1)+'.json',JSON.stringify(o),n);
 });
-$('ses').addEventListener('change',function(e){
- var f=e.target.files[0];if(!f)return;var n=$('sesnote');
- var rd=new FileReader();
- rd.onload=function(ev){try{
-  var o=JSON.parse(ev.target.result);if(!o||o.v!==1||!o.workers)throw new Error('el archivo no es una sesión válida');
+function openSession(txt){var n=$('sesnote');try{
+  var o=JSON.parse(txt);if(!o||o.v!==1||!o.workers)throw new Error('el archivo no es una sesión válida');
   sv(o.kp||{});sv(o.attr||{},'attr');
   state={lines:o.lines||[],errs:o.errs||[],mes:o.mes,anio:o.anio,omit:o.omit||{},workers:o.workers.map(function(w){w.ing=w.ing?new Date(w.ing):null;return w}),dates:null};
   SAL=o.sal||{};SALLOAD=!!o.sal;
@@ -582,13 +629,12 @@ $('ses').addEventListener('change',function(e){
   var counts={};state.lines.forEach(function(l){counts[l.marca]=(counts[l.marca]||0)+1});
   $('msgs').innerHTML='';
   render(state.workers.length,state.lines.length,counts,state.errs,[]);
-  ADJ=o.adj||{};render3();
+  ADJ=o.adj||{};render3();$('sp-estado').value=o.estado||'Abierto';$('sp-resp').value=o.resp||'';
   n.textContent='Sesión abierta: '+MESES[state.mes]+' '+state.anio+'.';
    document.querySelectorAll('.process-window').forEach(function(x){x.classList.remove('active')});$('via').classList.add('active');$('via').classList.remove('hide');
    document.querySelectorAll('[data-window]').forEach(function(x){x.setAttribute('aria-current',x.dataset.window==='via'?'step':'false')});
- }catch(x){n.textContent='No se pudo abrir la sesión: '+x.message}};
- rd.readAsText(f);
-});
+ }catch(x){n.textContent='No se pudo abrir la sesión: '+x.message}}
+$('ses').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(ev){openSession(ev.target.result)};rd.readAsText(f)});
 
 function amt(v){return String(Math.round(v*100)/100)}
 $('tx').addEventListener('click',function(){
@@ -615,22 +661,14 @@ $('tx').addEventListener('click',function(){
   return p.then(function(){n.textContent='TXT guardados. '+res.join(' · ')},function(e){n.textContent=e&&e.code==='declined'?'Descarga cancelada.':'No se pudo guardar: '+((e&&e.message)||'error')});
  }).catch(function(){n.textContent='No se pudo iniciar la descarga.'});
 });
-/* ===== Conexión a SharePoint (Microsoft Entra ID + Microsoft Graph) ===== */
+/* ===== Conexión con Microsoft (Entra ID + Graph) ===== */
 var SPCFG={
  clientId:'fda758f7-9776-4890-8a7d-0dad030454e7',
  tenantId:'947d6fae-c37b-4141-a00d-1b5468320f44',
- scopes:['User.Read','Sites.ReadWrite.All']
+ scopes:['User.Read','Files.ReadWrite.All']
 };
 var GR='https://graph.microsoft.com/v1.0';
-var pca=null,SP={site:null,lists:null};
-var TXTF={text:{}},NUM2={number:{decimalPlaces:'two'}};
-var SCH={
- TV_Meses:[['Periodo',{text:{},indexed:true}],['Mes',{number:{decimalPlaces:'none'}}],['Anio',{number:{decimalPlaces:'none'}}],['Estado',{choice:{choices:['Abierto','En revisión','Cerrado'],displayAs:'dropDownMenu'}}],['Responsable',TXTF]],
- TV_Tareo:[['Periodo',{text:{},indexed:true}],['DNI',TXTF],['Trabajador',TXTF],['Proyecto',TXTF],['Item',TXTF],['Fecha',{dateTime:{format:'dateOnly'}}],['Marca',TXTF]],
- TV_Viaticos:[['Periodo',{text:{},indexed:true}],['DNI',TXTF],['Trabajador',TXTF],['Concepto',{choice:{choices:['Alimentación','Alojamiento','Movilidad'],displayAs:'dropDownMenu'}}],['MontoAuto',NUM2],['Ajuste',NUM2],['MontoFinal',NUM2],['Motivo',TXTF]],
- TV_Historial:[['Periodo',{text:{},indexed:true}],['DNI',TXTF],['Trabajador',TXTF],['Concepto',TXTF],['ValorAnterior',NUM2],['ValorNuevo',NUM2],['Usuario',TXTF],['Fecha',{dateTime:{format:'dateTime'}}],['Motivo',{text:{allowMultipleLines:true,textType:'plain'}}]]
-};
-function kindOf(d){return ['text','number','choice','dateTime'].filter(function(k){return d[k]})[0]||'otro'}
+var pca=null;
 function sl(ms){return new Promise(function(r){setTimeout(r,ms)})}
 function spNote(id,t){$(id).textContent=t}
 function spUI(){
@@ -657,7 +695,7 @@ function tok(){
 function gf(method,url,body,tries){
  tries=tries||0;
  return tok().then(function(t){
-  return fetch(url.indexOf('http')===0?url:GR+url,{method:method,headers:{'Authorization':'Bearer '+t,'Content-Type':'application/json','Prefer':'HonorNonIndexedQueriesWarningMayFailRandomly'},body:body?JSON.stringify(body):undefined});
+  return fetch(url.indexOf('http')===0?url:GR+url,{method:method,headers:{'Authorization':'Bearer '+t,'Content-Type':(body&&body.raw)?(body.type||'application/octet-stream'):'application/json'},body:body?(body.raw?body.raw:JSON.stringify(body)):undefined});
  }).then(function(res){
   if((res.status===429||res.status===503)&&tries<5){var ra=(+res.headers.get('Retry-After')||2)*1000;return sl(ra).then(function(){return gf(method,url,body,tries+1)})}
   if(res.status===204)return null;
@@ -668,135 +706,122 @@ function gf(method,url,body,tries){
   });
  });
 }
-function spSite(){
- if(SP.site&&SP.lists)return Promise.resolve();
+/* ===== OneDrive (carpeta compartida) vía Microsoft Graph ===== */
+var OD={drive:null,folder:null,name:''};
+function shareId(u){return 'u!'+btoa(unescape(encodeURIComponent(u))).replace(/=+$/,'').replace(/\+/g,'-').replace(/\//g,'_')}
+function odResolve(){
+ if(OD.drive&&OD.folder)return Promise.resolve();
  var u=($('sp-site').value||'').trim();
- var m=u.match(/^https:\/\/([^\/?#]+)(\/[^?#]*)?/i);
- if(!m)return Promise.reject(new Error('Escriba la URL del sitio de SharePoint, por ejemplo https://empresa.sharepoint.com/sites/RRHH'));
- var seg=(m[2]||'').split('/').filter(Boolean),path='';
- if(seg[0]&&/^(sites|teams)$/i.test(seg[0])&&seg[1])path='/'+seg[0]+'/'+seg[1];
- return gf('GET','/sites/'+m[1]+(path?':'+path:'')).then(function(s){
-  SP.site=s.id;try{localStorage.setItem('spsite',u)}catch(e){}
-  return gf('GET','/sites/'+s.id+'/lists?$select=id,name,displayName&$top=200');
- }).then(function(r){SP.lists={};r.value.forEach(function(l){SP.lists[l.name]=l.id;SP.lists[l.displayName]=l.id})});
+ if(!/^https:\/\//i.test(u))return Promise.reject(new Error('Pegue el enlace de la carpeta de OneDrive (en OneDrive: Compartir → Copiar vínculo).'));
+ return gf('GET','/shares/'+shareId(u)+'/driveItem?$select=id,name,folder,parentReference').then(function(it){
+  if(!it.folder)throw new Error('El enlace no es de una carpeta. Comparta una carpeta de OneDrive, no un archivo.');
+  OD.drive=it.parentReference.driveId;OD.folder=it.id;OD.name=it.name;
+  try{localStorage.setItem('odlink',u)}catch(e){}
+ });
 }
-function LU(n){return '/sites/'+SP.site+'/lists/'+SP.lists[n]}
-async function spEnsure(){
- await spSite();
- var out=[],warn=[];
- for(var n in SCH){
-  if(!SP.lists[n]){var nl=await gf('POST','/sites/'+SP.site+'/lists',{displayName:n,list:{template:'genericList'}});SP.lists[n]=nl.id;out.push('Lista '+n+' creada.')}
-  var cols=await gf('GET',LU(n)+'/columns?$top=200');
-  var have={};cols.value.forEach(function(c){have[c.name.toLowerCase()]=c});
-  for(var i=0;i<SCH[n].length;i++){
-   var nm=SCH[n][i][0],def=SCH[n][i][1],ex=have[nm.toLowerCase()];
-   if(ex){if(kindOf(ex)!==kindOf(def))warn.push(n+'.'+nm+' existe como "'+kindOf(ex)+'" y se esperaba "'+kindOf(def)+'".');continue}
-   var body={name:nm};Object.keys(def).forEach(function(k){body[k]=def[k]});
-   await gf('POST',LU(n)+'/columns',body);out.push('Columna '+n+'.'+nm+' creada.');
-  }
- }
- return {out:out,warn:warn};
+function odPath(name){return '/drives/'+OD.drive+'/items/'+OD.folder+':/'+encodeURIComponent(name)}
+function odGet(name){return gf('GET',odPath(name)+'?$select=id,name,@microsoft.graph.downloadUrl').catch(function(e){if(e.status===404)return null;throw e})}
+function odPut(name,data,type){return gf('PUT',odPath(name)+':/content',{raw:data,type:type})}
+function odSessions(){
+ return odResolve().then(function(){return gf('GET','/drives/'+OD.drive+'/items/'+OD.folder+'/children?$select=name,lastModifiedDateTime&$top=200')}).then(function(r){
+  return r.value.filter(function(x){return /^Sesion_\d{4}-\d{2}\.json$/.test(x.name)}).sort(function(a,b){return a.name<b.name?1:-1});
+ });
 }
-async function spList(listName,filter,select){
- var url=LU(listName)+'/items?$expand=fields($select='+select+')&$top=999'+(filter?'&$filter='+encodeURIComponent(filter):'');
- var all=[];
- while(url){var r=await gf('GET',url);all=all.concat(r.value);url=r['@odata.nextLink']||null}
- return all;
+function odRefresh(silent){
+ var n=$('sesnote');
+ return odSessions().then(function(l){
+  var sel=$('od-list');sel.innerHTML='';
+  if(!l.length)sel.innerHTML='<option value="">(sin meses guardados)</option>';
+  l.forEach(function(x){var m=x.name.match(/(\d{4})-(\d{2})/),o=document.createElement('option');o.value=x.name;o.textContent=MESES[+m[2]-1]+' '+m[1];sel.appendChild(o)});
+  return l;
+ }).catch(function(e){if(!silent)n.textContent='No se pudo leer OneDrive: '+e.message});
 }
-async function spBatch(reqs,prog){
- var chunks=[],idx=0,done=0,fails=[];
- for(var i=0;i<reqs.length;i+=20)chunks.push(reqs.slice(i,i+20));
- async function worker(){
-  while(idx<chunks.length){
-   var ch=chunks[idx++];
-   var pend=ch.map(function(r,k){var o={id:String(k+1),method:r.method,url:r.url};if(r.body){o.body=r.body;o.headers={'Content-Type':'application/json'}}return o});
-   for(var t=0;t<5&&pend.length;t++){
-    var res=await gf('POST','/$batch',{requests:pend}),retry=[],wait=0;
-    res.responses.forEach(function(x){
-     if(x.status>=200&&x.status<300)return;
-     var orig=pend.filter(function(p){return p.id===x.id})[0];
-     if(x.status===429||x.status===503||x.status===504){wait=Math.max(wait,+((x.headers||{})['Retry-After'])||2);retry.push(orig)}
-     else fails.push((x.body&&x.body.error&&x.body.error.message)||('HTTP '+x.status));
-    });
-    pend=retry;if(pend.length)await sl(wait*1000+500);
-   }
-   pend.forEach(function(){fails.push('Se agotaron los reintentos (límite de Graph).')});
-   done+=ch.length;if(prog)prog(done,reqs.length);
-  }
- }
- await Promise.all([worker(),worker(),worker()]);
- return fails;
+function serS(f){var p=f.split('/');return Math.round((Date.UTC(+p[2],+p[1]-1,+p[0])-Date.UTC(1899,11,30))/86400000)}
+function odSheet(head,rows,widths){
+ var ws={},aoa=[head].concat(rows);
+ var HSx={font:{bold:true,color:{rgb:'FFFFFF'}},fill:{patternType:'solid',fgColor:{rgb:'1F4E8C'}},alignment:{horizontal:'center',vertical:'center',wrapText:true}};
+ aoa.forEach(function(row,r){row.forEach(function(v,c){
+  var cell=(v&&typeof v==='object')?v:{t:typeof v==='number'?'n':'s',v:(v==null?'':v)};
+  if(r===0)cell={t:'s',v:v,s:HSx};
+  ws[XLSX.utils.encode_cell({r:r,c:c})]=cell;
+ })});
+ ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:aoa.length-1,c:head.length-1}});
+ ws['!cols']=widths.map(function(w){return {wch:w}});ws['!autofilter']={ref:ws['!ref']};
+ return ws;
 }
-function isoD(s){var p=s.split('/');return p[2]+'-'+p[1]+'-'+p[0]+'T12:00:00Z'}
 async function spSave(){
  var n=$('sp-savenote'),btn=$('sp-save');
  if(!state||!state.workers||!ROWS.length){n.textContent='Cargue primero un Excel.';return}
  if(!pca||!pca.getActiveAccount()){n.textContent='Inicie sesión con Microsoft desde la pantalla de inicio (botón «Iniciar sesión» del menú izquierdo).';return}
  var f=ROWS.filter(function(r){var a=ADJ[r.w.dni];return hasAdj(a)&&!(a.motivo||'').trim()});
  if(f.length){n.textContent='Escriba el motivo del ajuste de '+f.length+' trabajador(es) antes de guardar.';return}
- var user=curUser();
- var per=state.anio+'-'+p2(state.mes+1),estado=$('sp-estado').value,resp=($('sp-resp').value||'').trim()||user;
+ var user=curUser(),per=state.anio+'-'+p2(state.mes+1),estado=$('sp-estado').value,resp=($('sp-resp').value||'').trim()||user;
+ var xname='CRI_Tareo_Viaticos_'+per+'.xlsx',jname='Sesion_'+per+'.json',now=new Date().toLocaleString('es-PE');
  btn.disabled=true;
  try{
-  n.textContent='Conectando con SharePoint…';
-  await spSite();
-  var falta=Object.keys(SCH).filter(function(k){return !SP.lists[k]});
-  if(falta.length)throw new Error('Faltan las listas '+falta.join(', ')+'. Use «Verificar listas y columnas».');
-  var flt="fields/Periodo eq '"+per+"'";
-  var mes=await spList('TV_Meses',flt,'Periodo,Estado');
-  if(mes.length&&mes[0].fields.Estado==='Cerrado'&&estado==='Cerrado')throw new Error('El mes '+per+' está Cerrado en SharePoint. Cambie el estado a «Abierto» o «En revisión» para reabrirlo y guardar.');
-  var mf={Title:per,Periodo:per,Mes:state.mes+1,Anio:state.anio,Estado:estado,Responsable:resp};
-  if(mes.length)await gf('PATCH',LU('TV_Meses')+'/items/'+mes[0].id+'/fields',mf);
-  else await gf('POST',LU('TV_Meses')+'/items',{fields:mf});
+  n.textContent='Conectando con OneDrive…';
+  await odResolve();
+  var ex=await odGet(xname),oldHist=[],oldEstado='';
+  if(ex&&ex['@microsoft.graph.downloadUrl']){
+   n.textContent='Leyendo el archivo anterior…';
+   var buf=await (await fetch(ex['@microsoft.graph.downloadUrl'])).arrayBuffer();
+   var ow=XLSX.read(buf,{type:'array'});
+   if(ow.Sheets.TV_Meses){var rm=XLSX.utils.sheet_to_json(ow.Sheets.TV_Meses,{defval:''});if(rm[0])oldEstado=rm[0].Estado||''}
+   if(ow.Sheets.TV_Historial)oldHist=XLSX.utils.sheet_to_json(ow.Sheets.TV_Historial,{defval:''});
+  }
+  if(oldEstado==='Cerrado'&&estado==='Cerrado')throw new Error('El mes '+per+' está Cerrado. Cambie el estado a «Abierto» o «En revisión» para reabrirlo y guardar.');
   var nom={};state.workers.forEach(function(w){nom[w.dni]=w.nom});
-  // Tareo: se reemplaza el periodo completo
-  var ex=await spList('TV_Tareo',flt,'Periodo');
-  var del=ex.map(function(x){return {method:'DELETE',url:LU('TV_Tareo')+'/items/'+x.id}});
-  var fl=await spBatch(del,function(d,t){n.textContent='Tareo: borrando versión anterior '+d+'/'+t});
-  if(fl.length)throw new Error('No se pudo borrar el tareo anterior: '+fl[0]);
-  var ins=state.lines.map(function(l){var iso=isoD(l.fecha);return {method:'POST',url:LU('TV_Tareo')+'/items',body:{fields:{Title:per+'|'+l.dni+'|'+iso.slice(0,10),Periodo:per,DNI:l.dni,Trabajador:nom[l.dni]||'',Proyecto:l.proy,Item:l.item,Fecha:iso,Marca:l.marca}}}});
-  fl=await spBatch(ins,function(d,t){n.textContent='Tareo: guardando '+d+'/'+t});
-  if(fl.length)throw new Error('Tareo con errores ('+fl.length+'): '+fl[0]);
-  // Viáticos
-  ex=await spList('TV_Viaticos',flt,'Periodo');
-  fl=await spBatch(ex.map(function(x){return {method:'DELETE',url:LU('TV_Viaticos')+'/items/'+x.id}}),function(d,t){n.textContent='Viáticos: borrando versión anterior '+d+'/'+t});
-  if(fl.length)throw new Error('No se pudo borrar los viáticos anteriores: '+fl[0]);
-  var CN={ali:'Alimentación',alo:'Alojamiento',mov:'Movilidad'},vi=[],hi=[];
+  var CN={ali:'Alimentación',alo:'Alojamiento',mov:'Movilidad'},tareo=[],via=[],hist=[],seen={};
+  state.lines.forEach(function(l){tareo.push([per,l.dni,nom[l.dni]||'',l.proy,l.item,{t:'n',v:serS(l.fecha),z:'dd/mm/yyyy'},l.marca])});
+  var HH=['Periodo','DNI','Trabajador','Concepto','ValorAnterior','ValorNuevo','Usuario','Fecha','Motivo','Clave'];
+  oldHist.forEach(function(h){hist.push(HH.map(function(k){return h[k]}));seen[h.Clave]=1});
   ROWS.forEach(function(r){
    var a=ADJ[r.w.dni]||{};
    ['ali','alo','mov'].forEach(function(k){
     var aj=a[k]!=null?a[k]:0;
     if(!(r[k]>0)&&!aj)return;
-    vi.push({method:'POST',url:LU('TV_Viaticos')+'/items',body:{fields:{Title:per+'|'+r.w.dni+'|'+CN[k],Periodo:per,DNI:r.w.dni,Trabajador:r.w.nom,Concepto:CN[k],MontoAuto:r[k],Ajuste:aj,MontoFinal:fin(r,k),Motivo:aj?(a.motivo||''):''}}});
-    if(a[k]!=null)hi.push({key:per+'|'+r.w.dni+'|'+CN[k]+'|'+r[k]+'|'+fin(r,k)+'|'+(a.motivo||''),fields:{Periodo:per,DNI:r.w.dni,Trabajador:r.w.nom,Concepto:CN[k],ValorAnterior:r[k],ValorNuevo:fin(r,k),Usuario:a.usuario||user,Fecha:a.ts||new Date().toISOString(),Motivo:a.motivo||''}});
+    via.push([per,r.w.dni,r.w.nom,CN[k],r[k],aj,fin(r,k),aj?(a.motivo||''):'']);
+    if(a[k]!=null){var key=per+'|'+r.w.dni+'|'+CN[k]+'|'+r[k]+'|'+fin(r,k)+'|'+(a.motivo||'');
+     if(!seen[key]){seen[key]=1;hist.push([per,r.w.dni,r.w.nom,CN[k],r[k],fin(r,k),a.usuario||user,a.ts?new Date(a.ts).toLocaleString('es-PE'):now,a.motivo||'',key])}}
    });
   });
-  fl=await spBatch(vi,function(d,t){n.textContent='Viáticos: guardando '+d+'/'+t});
-  if(fl.length)throw new Error('Viáticos con errores ('+fl.length+'): '+fl[0]);
-  // Historial: solo se agregan cambios que aún no están registrados
-  var eh=await spList('TV_Historial',flt,'Title'),seen={};
-  eh.forEach(function(x){seen[x.fields.Title]=1});
-  var nh=hi.filter(function(h){return !seen[h.key]}).map(function(h){h.fields.Title=h.key;return {method:'POST',url:LU('TV_Historial')+'/items',body:{fields:h.fields}}});
-  fl=await spBatch(nh);
-  if(fl.length)throw new Error('Historial con errores ('+fl.length+'): '+fl[0]);
-  n.textContent='Guardado en SharePoint ('+per+', estado '+estado+'): '+state.lines.length+' marcas, '+vi.length+' viáticos, '+nh.length+' cambios nuevos en el historial.';
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,odSheet(['Periodo','Mes','Anio','Estado','Responsable','Actualizado','Usuario'],[[per,state.mes+1,state.anio,estado,resp,now,user]],[10,6,8,14,22,22,24]),'TV_Meses');
+  XLSX.utils.book_append_sheet(wb,odSheet(['Periodo','DNI','Trabajador','Proyecto','Item','Fecha','Marca'],tareo,[10,12,36,12,10,12,8]),'TV_Tareo');
+  XLSX.utils.book_append_sheet(wb,odSheet(['Periodo','DNI','Trabajador','Concepto','MontoAuto','Ajuste','MontoFinal','Motivo'],via,[10,12,36,14,12,10,12,36]),'TV_Viaticos');
+  XLSX.utils.book_append_sheet(wb,odSheet(HH,hist,[10,12,36,14,14,12,24,22,36,30]),'TV_Historial');
+  var arr=XLSX.write(wb,{type:'array',bookType:'xlsx'});
+  n.textContent='Guardando el Excel en OneDrive…';
+  await odPut(xname,arr);
+  var o=sessObj(false);
+  n.textContent='Guardando la sesión…';
+  await odPut(jname,JSON.stringify(o),'application/json');
+  n.textContent='Guardado en OneDrive («'+OD.name+'», estado '+estado+'): '+xname+' y '+jname+' · '+tareo.length+' marcas, '+via.length+' viáticos, '+hist.length+' cambios en el historial.';
+  odRefresh(true);
  }catch(e){n.textContent='No se guardó: '+e.message}
  btn.disabled=false;
 }
-try{$('sp-site').value=localStorage.getItem('spsite')||''}catch(e){}
-$('sp-site').addEventListener('change',function(){SP.site=null;SP.lists=null});
+$('od-refresh').addEventListener('click',function(){var n=$('sesnote');n.textContent='Buscando meses guardados…';odRefresh().then(function(l){if(l)n.textContent=l.length?('Meses guardados en OneDrive: '+l.length+'.'):'No hay meses guardados en esa carpeta todavía.'})});
+$('od-open').addEventListener('click',async function(){
+ var nm=$('od-list').value,n=$('sesnote');
+ if(!nm){n.textContent='Elija un mes guardado (o presione Actualizar lista).';return}
+ try{n.textContent='Abriendo '+nm+'…';await odResolve();var it=await odGet(nm);
+  if(!it||!it['@microsoft.graph.downloadUrl'])throw new Error('no se encontró el archivo en la carpeta');
+  var tx=await (await fetch(it['@microsoft.graph.downloadUrl'])).text();openSession(tx);
+ }catch(e){n.textContent='No se pudo abrir: '+e.message}
+});
+try{var _u=localStorage.getItem('odlink');if(_u)$('sp-site').value=_u}catch(e){}
+$('sp-site').addEventListener('change',function(){OD.drive=null;OD.folder=null});
 $('sp-login').addEventListener('click',function(){
  if(!pca){spNote('sp-note','MSAL no está disponible en esta página.');return}
  pca.loginPopup({scopes:SPCFG.scopes}).then(function(r){pca.setActiveAccount(r.account);spUI();spNote('sp-note','Sesión iniciada.')}).catch(function(e){spNote('sp-note','No se pudo iniciar sesión: '+e.message)});
 });
 $('sp-logout').addEventListener('click',function(){
- pca.logoutPopup({account:pca.getActiveAccount()}).then(function(){SP.site=null;SP.lists=null;spUI();showLogin();spNote('sp-note','Sesión cerrada.')}).catch(function(e){spNote('sp-note','No se pudo cerrar sesión: '+e.message)});
+ pca.logoutPopup({account:pca.getActiveAccount()}).then(function(){OD.drive=null;OD.folder=null;spUI();showLogin();spNote('sp-note','Sesión cerrada.')}).catch(function(e){spNote('sp-note','No se pudo cerrar sesión: '+e.message)});
 });
 $('sp-check').addEventListener('click',function(){
- var b=$('sp-check');b.disabled=true;spNote('sp-note','Verificando listas y columnas…');
- spEnsure().then(function(r){
-  spNote('sp-note',(r.out.length?r.out.join(' '):'Las 4 listas y todas sus columnas están correctas.')+(r.warn.length?' ATENCIÓN: '+r.warn.join(' '):''));
- }).catch(function(e){spNote('sp-note','No se pudo verificar: '+e.message)}).then(function(){b.disabled=false});
+ var b=$('sp-check');b.disabled=true;spNote('sp-note','Verificando carpeta…');OD.drive=null;OD.folder=null;
+ odRefresh().then(function(l){spNote('sp-note',l?('Carpeta «'+OD.name+'» lista. Meses guardados: '+l.length+'.'):'No se pudo verificar la carpeta. Revise el enlace y que tenga permiso de edición.')}).catch(function(e){spNote('sp-note','No se pudo verificar: '+e.message)}).then(function(){b.disabled=false});
 });
 $('sp-save').addEventListener('click',spSave);
 function greet(){
@@ -809,6 +834,7 @@ function curUser(){var a=pca&&pca.getActiveAccount();return a?(a.name||a.usernam
 function showLogin(){$('app').classList.add('hide');$('sp').classList.remove('hide')}
 function spNext(){
  greet();
+ if(pca&&pca.getActiveAccount()&&($('sp-site').value||'').trim())odRefresh(true);
  $('sp').classList.add('hide');$('app').classList.remove('hide');
  var w=(state&&state.workers)?'via':'carga';
  document.querySelectorAll('.process-window').forEach(function(x){x.classList.remove('active')});
