@@ -180,6 +180,13 @@ input[type=number],input[type=text],select{padding:8px 10px;font-size:.92rem}
 #via #vt tr.totals-row td:nth-child(n+7){text-align:right}
 @media(min-width:1200px){#via .wrap{max-height:none!important;overflow:visible}}
 @media(max-width:700px){html{font-size:13px}}
+.syncpill{display:inline-flex;align-items:center;gap:6px;margin:-6px 0 14px;padding:6px 14px;border-radius:999px;font-size:.85rem;font-weight:600}
+.syncpill.hide{display:none}
+.syncpill.ok{background:var(--okbg);color:var(--ok)}
+.syncpill.warn{background:var(--warnbg);color:var(--warn)}
+.syncpill.err{background:var(--errbg);color:var(--err)}
+label.chk{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;color:var(--mut)}
+body.rev .only-prep{display:none!important}
 </style>
 </head>
 <body>
@@ -206,24 +213,25 @@ input[type=number],input[type=text],select{padding:8px 10px;font-size:.92rem}
 <label>Enlace de la carpeta de OneDrive <input id="sp-site" type="text" placeholder="https://empresa-my.sharepoint.com/:f:/g/personal/…" style="width:min(460px,100%)"></label>
 <button id="sp-check" type="button" class="sec" disabled>Verificar carpeta</button>
 </div>
+<div class="row" style="margin-top:10px" role="radiogroup" aria-label="Cómo va a usar la web"><label class="chk"><input type="radio" name="rol" value="prep" checked> Preparo el mes (cargo los Excel)</label><label class="chk"><input type="radio" name="rol" value="rev"> Reviso y ajusto un mes ya preparado</label></div>
 <p id="sp-note" class="mut"></p>
 <div class="row" style="margin-top:6px"><button id="sp-go" type="button" disabled>Continuar</button><button id="sp-skip" type="button" class="sec">Continuar sin conexión</button></div>
 </section>
 
-<div id="app" class="hide"><aside id="side"><div class="brand">CRI<small>Control Tareo y Viáticos</small></div><nav class="process-nav" aria-label="Procesos"><button type="button" data-window="carga" aria-current="step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Cargar Excel</span></button><button type="button" data-window="res" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg><span>Revisar tareo</span></button><button type="button" data-window="via" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Viáticos</span></button></nav><div class="who"><div class="me"><span class="av" id="sp-av">?</span><span id="sp-user2">Sin conexión</span></div><button id="sp-out" type="button" class="sec">Iniciar sesión</button></div></aside><div id="content"><header id="greet"><h1 id="greet-h">Hola 👋</h1><p id="greet-p"></p></header>
+<div id="app" class="hide"><aside id="side"><div class="brand">CRI<small>Control Tareo y Viáticos</small></div><nav class="process-nav" aria-label="Procesos"><button type="button" data-window="carga" aria-current="step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Cargar Excel</span></button><button type="button" data-window="res" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg><span>Revisar tareo</span></button><button type="button" data-window="via" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Viáticos</span></button></nav><div class="who"><div class="me"><span class="av" id="sp-av">?</span><span id="sp-user2">Sin conexión</span></div><button id="sp-out" type="button" class="sec">Iniciar sesión</button></div></aside><div id="content"><header id="greet"><h1 id="greet-h">Hola 👋</h1><p id="greet-p"></p><div id="sync" class="syncpill hide"></div></header>
 <section id="carga" class="process-window">
 <h2>1. Cargar el Excel de RR. HH.</h2>
-<div class="row">
+<div class="row only-prep">
 <label class="btn">Elegir archivo Excel<input id="file" type="file" accept=".xlsx,.xlsm,.xls"></label>
 <span id="fname" class="mut">Ningún archivo elegido</span>
 </div>
-<div id="manual" class="row hide" style="margin-top:12px">
+<div id="manual" class="row hide only-prep" style="margin-top:12px">
 <span class="mut">El archivo no trae fechas completas en los encabezados. Indique el mes:</span>
 <select id="mm"></select>
 <input id="yy" type="number" min="2020" max="2100" value="2026" style="width:90px" aria-label="Año">
 <button id="apply" class="sec" type="button">Aplicar</button>
 </div>
-<div class="row" style="margin-top:12px"><span class="mut">¿Tiene una sesión guardada?</span><label class="btn sec">Abrir sesión<input id="ses" type="file" accept=".json"></label><span class="mut" id="sesnote"></span></div>
+<div class="row only-prep" style="margin-top:12px"><span class="mut">¿Tiene una sesión guardada?</span><label class="btn sec">Abrir sesión<input id="ses" type="file" accept=".json"></label><span class="mut" id="sesnote"></span></div>
 <div class="row" style="margin-top:12px"><span class="mut">¿Mes guardado en OneDrive?</span><select id="od-list" aria-label="Meses guardados en OneDrive"><option value="">(conéctese y presione Actualizar lista)</option></select><button id="od-open" type="button" class="sec">Abrir mes</button><button id="od-refresh" type="button" class="sec">Actualizar lista</button></div>
 <div id="msgs"></div>
 </section>
@@ -240,7 +248,7 @@ input[type=number],input[type=text],select{padding:8px 10px;font-size:.92rem}
 <span class="mut" id="dlnote"></span>
 </div>
 </section>
-<section id="via" class="process-window hide"><h2>3. Viáticos del mes</h2><div class="row"><button id="gs" class="sec" type="button">Guardar sesión</button><label><input type="checkbox" id="incs" checked> Incluir sueldos en la sesión</label></div><p class="mut">Los importes automáticos no se modifican. Si cambia un importe final, escriba el motivo. Key Person, grupo, procedencia y status de tarjeta se guardan en este navegador y se repiten cada mes hasta que usted los cambie.</p><div class="row" style="margin-bottom:10px"><label class="btn">Cargar sueldos (Excel)<input id="sal" type="file" accept=".xlsx,.xls,.csv"></label><span class="mut" id="salnote">Dos columnas: DNI y Sueldo. Solo se usa para calcular la alimentación a planilla (20 % del sueldo).</span></div><div class="kpis" id="vsum"><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></span>Alimentación</div><div class="kv" id="k_ali">S/ 0.00</div><div class="kd" id="d_ali">Sin ajustes</div></div><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>Alojamiento</div><div class="kv" id="k_alo">S/ 0.00</div><div class="kd" id="d_alo">Sin ajustes</div></div><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>Movilidad</div><div class="kv" id="k_mov">S/ 0.00</div><div class="kd" id="d_mov">Sin ajustes</div></div><div class="kpi hl"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Total a pagar</div><div class="kv" id="k_tot">S/ 0.00</div><div class="kd" id="d_tot">Sin ajustes</div></div></div><div class="concept-tabs" role="tablist" aria-label="Conceptos de viáticos"><button type="button" data-concept="ali" role="tab" aria-selected="true">Alimentación</button><button type="button" data-concept="alo" role="tab" aria-selected="false">Alojamiento</button><button type="button" data-concept="mov" role="tab" aria-selected="false">Movilidad</button></div><p class="mut" id="concept-note">Concepto activo: Alimentación. Use las pestañas para revisar cada concepto por separado.</p><div class="wrap" style="max-height:480px"><table id="vt" class="tab-ali"></table></div><div class="row" style="margin-top:12px"><button id="xl" type="button">Descargar Excel de viáticos</button><button id="tx" type="button">Descargar los 3 TXT de viáticos</button><span class="mut" id="xlnote"></span></div><div class="row" style="margin-top:12px"><label>Estado del mes <select id="sp-estado"><option>Abierto</option><option>En revisión</option><option>Cerrado</option></select></label><label>Responsable <input id="sp-resp" type="text" style="width:180px" placeholder="Nombre"></label><button id="sp-save" type="button">Guardar en OneDrive</button><span class="mut" id="sp-savenote"></span></div></section>
+<section id="via" class="process-window hide"><h2>3. Viáticos del mes</h2><div class="row only-prep"><button id="gs" class="sec" type="button">Guardar sesión</button><label><input type="checkbox" id="incs" checked> Incluir sueldos al guardar (sesión y OneDrive)</label></div><p class="mut">Los importes automáticos no se modifican. Si cambia un importe final, escriba el motivo. Key Person, grupo, procedencia y status de tarjeta se guardan en este navegador y se repiten cada mes hasta que usted los cambie.</p><div class="row only-prep" style="margin-bottom:10px"><label class="btn">Cargar sueldos (Excel)<input id="sal" type="file" accept=".xlsx,.xls,.csv"></label><span class="mut" id="salnote">Dos columnas: DNI y Sueldo. Solo se usa para calcular la alimentación a planilla (20 % del sueldo).</span></div><div class="kpis" id="vsum"><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></span>Alimentación</div><div class="kv" id="k_ali">S/ 0.00</div><div class="kd" id="d_ali">Sin ajustes</div></div><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>Alojamiento</div><div class="kv" id="k_alo">S/ 0.00</div><div class="kd" id="d_alo">Sin ajustes</div></div><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>Movilidad</div><div class="kv" id="k_mov">S/ 0.00</div><div class="kd" id="d_mov">Sin ajustes</div></div><div class="kpi hl"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Total a pagar</div><div class="kv" id="k_tot">S/ 0.00</div><div class="kd" id="d_tot">Sin ajustes</div></div></div><div class="concept-tabs" role="tablist" aria-label="Conceptos de viáticos"><button type="button" data-concept="ali" role="tab" aria-selected="true">Alimentación</button><button type="button" data-concept="alo" role="tab" aria-selected="false">Alojamiento</button><button type="button" data-concept="mov" role="tab" aria-selected="false">Movilidad</button></div><p class="mut" id="concept-note">Concepto activo: Alimentación. Use las pestañas para revisar cada concepto por separado.</p><div class="wrap" style="max-height:480px"><table id="vt" class="tab-ali"></table></div><div class="row" style="margin-top:12px"><button id="xl" type="button">Descargar Excel de viáticos</button><button id="tx" type="button">Descargar los 3 TXT de viáticos</button><span class="mut" id="xlnote"></span></div><div class="row" style="margin-top:12px"><label>Estado del mes <select id="sp-estado"><option>Abierto</option><option>En revisión</option><option>Cerrado</option></select></label><label>Responsable <input id="sp-resp" type="text" style="width:180px" placeholder="Nombre"></label><button id="sp-save" type="button">Guardar en OneDrive</button><label class="chk"><input type="checkbox" id="sp-auto" checked> Sincronizar automáticamente</label><span class="mut" id="sp-savenote"></span></div></section>
 </div></div>
 </main>
 
@@ -266,12 +274,12 @@ var $=function(i){return document.getElementById(i)};
   $('concept-note').textContent='Concepto activo: '+({ali:'Alimentación',alo:'Alojamiento',mov:'Movilidad'}[k])+'. Los importes automáticos y finales se muestran en esta pestaña.';
  })});
 
-var rows=null, hdr=null, state=null;
+var rows=null, hdr=null, state=null, SILENT=false;
 MESES.forEach(function(m,i){var o=document.createElement("option");o.value=i;o.textContent=m;$("mm").appendChild(o)});
 $("mm").value=new Date().getMonth();
 
 function col(s){var n=0;for(var i=0;i<s.length;i++)n=n*26+s.charCodeAt(i)-64;return n-1}
-var C={dni:col("C"),cci:col("D"),nom:col("E"),cargo:col("F"),ing:col("G"),cc:col("I"),proy:col("J"),item:col("K"),cond:col("N"),first:col("P"),last:col("AS")};
+var C={dni:col("C"),cci:col("D"),nom:col("E"),cargo:col("F"),ing:col("G"),cc:col("I"),proy:col("J"),item:col("K"),cond:col("N"),first:col("P"),last:col("AT")};
 function p2(n){return (n<10?"0":"")+n}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function txt(v){return v==null?"":String(v).trim()}
@@ -280,7 +288,7 @@ function toDate(v){
  return null}
 
 $("file").addEventListener("change",function(e){
- var f=e.target.files[0]; if(!f)return;
+ var f=e.target.files[0]; if(!f)return;syncOff();
  $("fname").textContent=f.name; $("msgs").innerHTML=""; $("res").classList.add("hide"); $("manual").classList.add("hide");
  var r=new FileReader();
  r.onload=function(ev){
@@ -314,7 +322,7 @@ function detect(){
  }
  if(best){hdr=null;run(best.dates,best.row);return}
  if(hdr){$("manual").classList.remove("hide");msg("warn","Se encontraron los días (1 a 31) pero no el mes. Elíjalo arriba y presione Aplicar.");return}
- msg("err","No se encontró la fila de fechas en las columnas P a AS de la hoja TAREO.");
+ msg("err","No se encontró la fila de fechas en las columnas P a AT de la hoja TAREO.");
 }
 
 function run(dates,hrow){
@@ -336,7 +344,7 @@ function run(dates,hrow){
   if(seen[dni]){errs.push("Fila "+fila+": DNI duplicado "+dni+" (también en fila "+seen[dni]+").");continue}
   seen[dni]=fila;dnis++;
   var wk={dni:dni,nom:txt(row[C.nom]),cargo:txt(row[C.cargo]),cci:txt(row[C.cci]),cc:txt(row[C.cc]),proy:txt(row[C.proy]),cond:txt(row[C.cond]),ing:toDate(row[C.ing]),mk:[]};
-  for(var q=C.first;q<=C.last;q++)wk.mk.push(txt(row[q]).toUpperCase());
+  for(var q=C.first;q<=C.last;q++)wk.mk.push(dates[q-C.first]?txt(row[q]).toUpperCase():"");
   workers.push(wk);
   var proy=txt(row[C.proy]),item=txt(row[C.item]);
   if(proy==="")errs.push("Fila "+fila+": DNI "+dni+" sin proyecto.");
@@ -345,7 +353,7 @@ function run(dates,hrow){
   for(var c2=C.first;c2<=C.last;c2++){
    var d=dates[c2-C.first],m=txt(row[c2]).toUpperCase();
    if(m==="")continue;
-   if(!d){errs.push("Fila "+fila+": hay una marca ("+m+") en una columna sin fecha.");continue}
+   if(!d){if(c2===C.last)continue;errs.push("Fila "+fila+": hay una marca ("+m+") en una columna sin fecha.");continue}
    if(MARCAS.indexOf(m)<0){if(IGN.indexOf(m)>=0)omit[m]=(omit[m]||0)+1;else unk[m]=(unk[m]||0)+1;continue}
    lines.push({dni:dni,proy:proy,item:item,fecha:p2(d.getDate())+"/"+p2(d.getMonth()+1)+"/"+d.getFullYear(),marca:m});
    counts[m]=(counts[m]||0)+1;marks++;
@@ -374,7 +382,7 @@ function render(dnis,marks,counts,errs,warns){
  $("prevnote").textContent="Mostrando "+Math.min(100,state.lines.length)+" de "+state.lines.length+" líneas.";
  $("dl").disabled=!state.lines.length;
  $("dlnote").textContent=errs.length?"Se descargará solo lo correcto; corrija el Excel para incluir lo omitido.":"";
- ADJ={};calc();render3();greet();showSuccess();
+ ADJ={};calc();render3();greet();if(!SILENT)showSuccess();
 }
 function st(a,b){return '<div class="stat"><b>'+esc(a)+"</b><span>"+b+"</span></div>"}
 
@@ -456,16 +464,16 @@ function tot(){
 }
 $('vt').addEventListener('change',function(e){
  var t=e.target;
- if(t.dataset.kp!=null){var K=ld(),r=ROWS[+t.dataset.kp];if(t.checked)K[r.w.dni]=1;else delete K[r.w.dni];sv(K);calc();render3();return}
+ if(t.dataset.kp!=null){var K=ld(),r=ROWS[+t.dataset.kp];if(t.checked)K[r.w.dni]=1;else delete K[r.w.dni];sv(K);markDirty(r.w.dni);calc();render3();return}
  if(t.dataset.adjust){var r2=ROWS[+t.dataset.i],k=t.dataset.adjust,v=parseFloat(t.value),a=ADJ[r2.w.dni]||(ADJ[r2.w.dni]={});
   if(isNaN(v)||Math.abs(v)<0.005)delete a[k];else{a[k]=Math.round(v*100)/100;a.usuario=curUser();a.fecha=new Date().toLocaleString('es-PE');a.ts=new Date().toISOString()}
   if(!hasAdj(a)&&!a.motivo)delete ADJ[r2.w.dni];
-  t.value=(a[k]||0).toFixed(2);tot();return}
+  t.value=(a[k]||0).toFixed(2);tot();markDirty(r2.w.dni);return}
  if(t.dataset.g!=null||t.dataset.pr!=null){var ix=+(t.dataset.g!=null?t.dataset.g:t.dataset.pr),rw=ROWS[ix],At=ld('attr'),a2=At[rw.w.dni]||(At[rw.w.dni]={});
   if(t.dataset.g!=null){if(t.value===grpAuto(rw.w))delete a2.g;else a2.g=t.value;rw.w.grupo=a2.g||''}
   else if(t.dataset.pr!=null){if(t.value.trim())a2.p=t.value.trim();else delete a2.p;rw.w.proc=a2.p||''}
-  if(!a2.g&&!a2.p)delete At[rw.w.dni];sv(At,'attr');return}
- if(t.dataset.mo!=null){var r3=ROWS[+t.dataset.mo],b=ADJ[r3.w.dni]||(ADJ[r3.w.dni]={});b.motivo=t.value;if(!hasAdj(b)&&!b.motivo)delete ADJ[r3.w.dni]}
+  if(!a2.g&&!a2.p)delete At[rw.w.dni];sv(At,'attr');markDirty(rw.w.dni);return}
+ if(t.dataset.mo!=null){var r3=ROWS[+t.dataset.mo],b=ADJ[r3.w.dni]||(ADJ[r3.w.dni]={});b.motivo=t.value;if(!hasAdj(b)&&!b.motivo)delete ADJ[r3.w.dni];markDirty(r3.w.dni)}
 });
 $('xl').addEventListener('click',function(){
  var n=$('xlnote');
@@ -492,7 +500,7 @@ $('sal').addEventListener('change',function(e){
   for(var r=hr+1;r<rs.length;r++){var row=rs[r]||[],d=txt(row[cd]);if(!/^\d+$/.test(d))continue;var v=row[cv];v=typeof v==='number'?v:parseFloat(String(v).replace(/[^\d.]/g,''));if(isNaN(v))continue;o[nk(d)]=v;c++}
   if(!c){n.textContent='No se encontraron DNI y sueldos. Use dos columnas: DNI y Sueldo.';return}
   SAL=o;SALLOAD=true;n.textContent='Sueldos cargados: '+c+' trabajadores.';
-  if(state&&ROWS.length)render3();
+  if(state&&ROWS.length)render3();markDirty('*');
  }catch(x){n.textContent='No se pudo leer el archivo: '+x.message}};
  rd.readAsArrayBuffer(f);
 });
@@ -620,20 +628,21 @@ $('gs').addEventListener('click',function(){
  var o=sessObj($('incs').checked);
  saveFile('Sesion_Viaticos_'+state.anio+'-'+p2(state.mes+1)+'.json',JSON.stringify(o),n);
 });
-function openSession(txt){var n=$('sesnote');try{
-  var o=JSON.parse(txt);if(!o||o.v!==1||!o.workers)throw new Error('el archivo no es una sesión válida');
+function applySession(o,opt){opt=opt||{};var n=$('sesnote');SILENT=!!(opt.silent||opt.noModal);try{
+  if(!o||o.v!==1||!o.workers)throw new Error('el archivo no es una sesión válida');
   sv(o.kp||{});sv(o.attr||{},'attr');
   state={lines:o.lines||[],errs:o.errs||[],mes:o.mes,anio:o.anio,omit:o.omit||{},workers:o.workers.map(function(w){w.ing=w.ing?new Date(w.ing):null;return w}),dates:null};
-  SAL=o.sal||{};SALLOAD=!!o.sal;
-  $('salnote').textContent=SALLOAD?'Sueldos cargados desde la sesión.':'Dos columnas: DNI y Sueldo. Solo se usa para calcular la alimentación a planilla (20 % del sueldo).';
+  if(!(opt.silent&&!o.sal)){SAL=o.sal||{};SALLOAD=!!o.sal}
+  $('salnote').textContent=SALLOAD?'Sueldos cargados desde el mes guardado.':'Dos columnas: DNI y Sueldo. Solo se usa para calcular la alimentación a planilla (20 % del sueldo).';
   var counts={};state.lines.forEach(function(l){counts[l.marca]=(counts[l.marca]||0)+1});
   $('msgs').innerHTML='';
   render(state.workers.length,state.lines.length,counts,state.errs,[]);
   ADJ=o.adj||{};render3();$('sp-estado').value=o.estado||'Abierto';$('sp-resp').value=o.resp||'';
-  n.textContent='Sesión abierta: '+MESES[state.mes]+' '+state.anio+'.';
+  if(!opt.silent){n.textContent='Sesión abierta: '+MESES[state.mes]+' '+state.anio+'.';
    document.querySelectorAll('.process-window').forEach(function(x){x.classList.remove('active')});$('via').classList.add('active');$('via').classList.remove('hide');
-   document.querySelectorAll('[data-window]').forEach(function(x){x.setAttribute('aria-current',x.dataset.window==='via'?'step':'false')});
- }catch(x){n.textContent='No se pudo abrir la sesión: '+x.message}}
+   document.querySelectorAll('[data-window]').forEach(function(x){x.setAttribute('aria-current',x.dataset.window==='via'?'step':'false')})}
+ }finally{SILENT=false}}
+function openSession(txt){var n=$('sesnote');try{applySession(JSON.parse(txt),{});syncOff()}catch(x){n.textContent='No se pudo abrir la sesión: '+x.message}}
 $('ses').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(ev){openSession(ev.target.result)};rd.readAsText(f)});
 
 function amt(v){return String(Math.round(v*100)/100)}
@@ -695,7 +704,7 @@ function tok(){
 function gf(method,url,body,tries){
  tries=tries||0;
  return tok().then(function(t){
-  return fetch(url.indexOf('http')===0?url:GR+url,{method:method,headers:{'Authorization':'Bearer '+t,'Content-Type':(body&&body.raw)?(body.type||'application/octet-stream'):'application/json'},body:body?(body.raw?body.raw:JSON.stringify(body)):undefined});
+  return fetch(url.indexOf('http')===0?url:GR+url,{method:method,headers:Object.assign({'Authorization':'Bearer '+t,'Content-Type':(body&&body.raw)?(body.type||'application/octet-stream'):'application/json'},(body&&body.h)||{}),body:body?(body.raw?body.raw:JSON.stringify(body)):undefined});
  }).then(function(res){
   if((res.status===429||res.status===503)&&tries<5){var ra=(+res.headers.get('Retry-After')||2)*1000;return sl(ra).then(function(){return gf(method,url,body,tries+1)})}
   if(res.status===204)return null;
@@ -720,8 +729,8 @@ function odResolve(){
  });
 }
 function odPath(name){return '/drives/'+OD.drive+'/items/'+OD.folder+':/'+encodeURIComponent(name)}
-function odGet(name){return gf('GET',odPath(name)+'?$select=id,name,@microsoft.graph.downloadUrl').catch(function(e){if(e.status===404)return null;throw e})}
-function odPut(name,data,type){return gf('PUT',odPath(name)+':/content',{raw:data,type:type})}
+function odGet(name){return gf('GET',odPath(name)+'?$select=id,name,eTag,lastModifiedDateTime,lastModifiedBy,@microsoft.graph.downloadUrl').catch(function(e){if(e.status===404)return null;throw e})}
+function odPut(name,data,type,etag){return gf('PUT',odPath(name)+':/content',{raw:data,type:type,h:etag?{'If-Match':etag}:null})}
 function odSessions(){
  return odResolve().then(function(){return gf('GET','/drives/'+OD.drive+'/items/'+OD.folder+'/children?$select=name,lastModifiedDateTime&$top=200')}).then(function(r){
   return r.value.filter(function(x){return /^Sesion_\d{4}-\d{2}\.json$/.test(x.name)}).sort(function(a,b){return a.name<b.name?1:-1});
@@ -749,27 +758,95 @@ function odSheet(head,rows,widths){
  ws['!cols']=widths.map(function(w){return {wch:w}});ws['!autofilter']={ref:ws['!ref']};
  return ws;
 }
-async function spSave(){
- var n=$('sp-savenote'),btn=$('sp-save');
- if(!state||!state.workers||!ROWS.length){n.textContent='Cargue primero un Excel.';return}
- if(!pca||!pca.getActiveAccount()){n.textContent='Inicie sesión con Microsoft desde la pantalla de inicio (botón «Iniciar sesión» del menú izquierdo).';return}
- var f=ROWS.filter(function(r){var a=ADJ[r.w.dni];return hasAdj(a)&&!(a.motivo||'').trim()});
- if(f.length){n.textContent='Escriba el motivo del ajuste de '+f.length+' trabajador(es) antes de guardar.';return}
- var user=curUser(),per=state.anio+'-'+p2(state.mes+1),estado=$('sp-estado').value,resp=($('sp-resp').value||'').trim()||user;
- var xname='CRI_Tareo_Viaticos_'+per+'.xlsx',jname='Sesion_'+per+'.json',now=new Date().toLocaleString('es-PE');
- btn.disabled=true;
+/* ===== Sincronización entre equipos (guardado automático + actualización) ===== */
+var SYNC={on:false,per:'',etag:null,by:'',at:null,dirty:{},busy:false,t:null,status:'',cls:'ok'};
+function syncAuto(){return $('sp-auto')&&$('sp-auto').checked}
+function ago(d){if(!d)return '';var m=Math.round((Date.now()-d.getTime())/60000);return m<1?'hace un momento':'hace '+m+' min'}
+var TYPING=false;$('vt').addEventListener('input',function(){TYPING=true});$('vt').addEventListener('change',function(){TYPING=false});
+function syncUI(txt,cls){
+ var e=$('sync');if(!e)return;
+ if(txt!==undefined){SYNC.status=txt;SYNC.cls=cls||'ok'}
+ if(!SYNC.on&&!SYNC.status){e.className='syncpill hide';return}
+ e.className='syncpill '+(SYNC.cls||'ok');e.textContent=SYNC.status;
+}
+function syncIdle(){if(SYNC.on)syncUI('● Sincronizado con OneDrive'+(SYNC.by?' · último guardado: '+SYNC.by:'')+(SYNC.at?' ('+ago(SYNC.at)+')':''),'ok')}
+function syncOff(){SYNC.on=false;SYNC.dirty={};SYNC.etag=null;SYNC.status='';clearTimeout(SYNC.t);syncUI()}
+function metaBy(it){return (it&&it.lastModifiedBy&&it.lastModifiedBy.user&&it.lastModifiedBy.user.displayName)||''}
+function syncLink(o,it){SYNC.on=true;SYNC.per=o.anio+'-'+p2(o.mes+1);SYNC.etag=it.eTag;SYNC.by=metaBy(it);SYNC.at=it.lastModifiedDateTime?new Date(it.lastModifiedDateTime):new Date();SYNC.dirty={};syncIdle()}
+function markDirty(dni){
+ if(!SYNC.on)return;
+ SYNC.dirty[dni]=1;syncUI('● Cambios sin guardar…','warn');
+ if(syncAuto())schedSave();
+}
+function schedSave(){clearTimeout(SYNC.t);SYNC.t=setTimeout(function(){spSave(true)},2500)}
+function mergeDirty(o){
+ var D=SYNC.dirty,kp=o.kp||{},at=o.attr||{},adj=o.adj||{},lk=ld(),la=ld('attr');
+ Object.keys(D).forEach(function(d){
+  if(d==='*')return;
+  if(ADJ[d])adj[d]=ADJ[d];else delete adj[d];
+  if(lk[d])kp[d]=1;else delete kp[d];
+  if(la[d])at[d]=la[d];else delete at[d];
+ });
+ if(D['*']){o.estado=$('sp-estado').value;o.resp=$('sp-resp').value;if(SALLOAD&&$('incs').checked)o.sal=SAL}
+ o.kp=kp;o.attr=at;o.adj=adj;return o;
+}
+async function syncPull(it){
+ var o=JSON.parse(await (await fetch(it['@microsoft.graph.downloadUrl'])).text());
+ if(Object.keys(SYNC.dirty).length)mergeDirty(o);
+ applySession(o,{silent:true});
+ SYNC.etag=it.eTag;SYNC.by=metaBy(it);SYNC.at=it.lastModifiedDateTime?new Date(it.lastModifiedDateTime):new Date();
+}
+async function syncPoll(){
+ if(!SYNC.on||!syncAuto()||SYNC.busy||document.visibilityState!=='visible'||!pca||!pca.getActiveAccount())return;
+ if(Object.keys(SYNC.dirty).length)return;
+ if(TYPING)return;
+ SYNC.busy=true;
  try{
-  n.textContent='Conectando con OneDrive…';
+  var it=await odGet('Sesion_'+SYNC.per+'.json');
+  if(it&&it.eTag!==SYNC.etag){await syncPull(it);syncUI('● Actualizado con los cambios de '+(SYNC.by||'otra persona')+' ('+ago(SYNC.at)+')','ok')}
+  else syncIdle();
+ }catch(e){syncUI('● No se pudo sincronizar: '+e.message,'err')}
+ SYNC.busy=false;
+}
+setInterval(syncPoll,window.__SYNC_MS||30000);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')syncPoll()});
+window.addEventListener('beforeunload',function(e){if(SYNC.on&&Object.keys(SYNC.dirty).length){e.preventDefault();e.returnValue=''}});
+async function spSave(auto){
+ auto=(auto===true);
+ var n=$('sp-savenote'),btn=$('sp-save');
+ function say(t){n.textContent=t}
+ if(SYNC.busy){if(auto)schedSave();return}
+ if(!state||!state.workers||!ROWS.length){if(!auto)say('Cargue primero un Excel.');return}
+ if(!pca||!pca.getActiveAccount()){if(!auto)say('Inicie sesión con Microsoft desde la pantalla de inicio (botón «Iniciar sesión» del menú izquierdo).');return}
+ var f=ROWS.filter(function(r){var a=ADJ[r.w.dni];return hasAdj(a)&&!(a.motivo||'').trim()});
+ if(f.length){if(auto)syncUI('● Pendiente: escriba el motivo de '+f.length+' ajuste(s) para sincronizar','warn');else say('Escriba el motivo del ajuste de '+f.length+' trabajador(es) antes de guardar.');return}
+ var per=state.anio+'-'+p2(state.mes+1),xname='CRI_Tareo_Viaticos_'+per+'.xlsx',jname='Sesion_'+per+'.json';
+ var snap=Object.assign({},SYNC.dirty);
+ SYNC.busy=true;btn.disabled=true;clearTimeout(SYNC.t);
+ syncUI('● Guardando en OneDrive…','warn');
+ try{
+  say('Conectando con OneDrive…');
   await odResolve();
+  var jm=await odGet(jname);
+  if(jm){
+   if(!(SYNC.on&&SYNC.per===per)){
+    if(auto)throw new Error('Ya existe un guardado de este mes en OneDrive. Use «Abrir mes» para continuar con él.');
+    if(!confirm('Ya existe un guardado de este mes en OneDrive'+(metaBy(jm)?' (hecho por '+metaBy(jm)+')':'')+'.\n\n¿Reemplazarlo con lo que tiene en pantalla?\n\nAceptar = reemplazar. Cancelar = no guardar (use «Abrir mes» para continuar con lo guardado).'))throw new Error('Guardado cancelado.');
+   }else if(jm.eTag!==SYNC.etag){
+    say('Otra persona guardó cambios; combinándolos…');
+    await syncPull(jm);
+   }
+  }
+  var user=curUser(),estado=$('sp-estado').value,resp=($('sp-resp').value||'').trim()||user,now=new Date().toLocaleString('es-PE');
   var ex=await odGet(xname),oldHist=[],oldEstado='';
   if(ex&&ex['@microsoft.graph.downloadUrl']){
-   n.textContent='Leyendo el archivo anterior…';
+   say('Leyendo el archivo anterior…');
    var buf=await (await fetch(ex['@microsoft.graph.downloadUrl'])).arrayBuffer();
    var ow=XLSX.read(buf,{type:'array'});
    if(ow.Sheets.TV_Meses){var rm=XLSX.utils.sheet_to_json(ow.Sheets.TV_Meses,{defval:''});if(rm[0])oldEstado=rm[0].Estado||''}
    if(ow.Sheets.TV_Historial)oldHist=XLSX.utils.sheet_to_json(ow.Sheets.TV_Historial,{defval:''});
   }
-  if(oldEstado==='Cerrado'&&estado==='Cerrado')throw new Error('El mes '+per+' está Cerrado. Cambie el estado a «Abierto» o «En revisión» para reabrirlo y guardar.');
+  if(oldEstado==='Cerrado'&&estado==='Cerrado'&&!(SYNC.on&&SYNC.per===per&&SYNC.closedOk))throw new Error('El mes '+per+' está Cerrado. Cambie el estado a «Abierto» o «En revisión» para reabrirlo y guardar.');
   var nom={};state.workers.forEach(function(w){nom[w.dni]=w.nom});
   var CN={ali:'Alimentación',alo:'Alojamiento',mov:'Movilidad'},tareo=[],via=[],hist=[],seen={};
   state.lines.forEach(function(l){tareo.push([per,l.dni,nom[l.dni]||'',l.proy,l.item,{t:'n',v:serS(l.fecha),z:'dd/mm/yyyy'},l.marca])});
@@ -790,26 +867,31 @@ async function spSave(){
   XLSX.utils.book_append_sheet(wb,odSheet(['Periodo','DNI','Trabajador','Proyecto','Item','Fecha','Marca'],tareo,[10,12,36,12,10,12,8]),'TV_Tareo');
   XLSX.utils.book_append_sheet(wb,odSheet(['Periodo','DNI','Trabajador','Concepto','MontoAuto','Ajuste','MontoFinal','Motivo'],via,[10,12,36,14,12,10,12,36]),'TV_Viaticos');
   XLSX.utils.book_append_sheet(wb,odSheet(HH,hist,[10,12,36,14,14,12,24,22,36,30]),'TV_Historial');
-  var arr=XLSX.write(wb,{type:'array',bookType:'xlsx'});
-  n.textContent='Guardando el Excel en OneDrive…';
-  await odPut(xname,arr);
-  var o=sessObj(false);
-  n.textContent='Guardando la sesión…';
-  await odPut(jname,JSON.stringify(o),'application/json');
-  n.textContent='Guardado en OneDrive («'+OD.name+'», estado '+estado+'): '+xname+' y '+jname+' · '+tareo.length+' marcas, '+via.length+' viáticos, '+hist.length+' cambios en el historial.';
+  say('Guardando en OneDrive…');
+  await odPut(xname,XLSX.write(wb,{type:'array',bookType:'xlsx'}));
+  var res=await odPut(jname,JSON.stringify(sessObj($('incs').checked)),'application/json',jm?jm.eTag:null);
+  SYNC.on=true;SYNC.per=per;SYNC.etag=res.eTag;SYNC.by=user;SYNC.at=new Date();
+  Object.keys(snap).forEach(function(k){delete SYNC.dirty[k]});
+  say('Guardado en OneDrive («'+OD.name+'», estado '+estado+') · '+tareo.length+' marcas, '+via.length+' viáticos, '+hist.length+' cambios en el historial.');
+  syncIdle();
+  if(Object.keys(SYNC.dirty).length&&syncAuto())schedSave();
   odRefresh(true);
- }catch(e){n.textContent='No se guardó: '+e.message}
- btn.disabled=false;
+ }catch(e){
+  if(e.status===412){say('Otra persona guardó al mismo tiempo. Se volverá a sincronizar solo.');syncUI('● Combinando con los cambios de otra persona…','warn');if(SYNC.on)schedSave()}
+  else{say('No se guardó: '+e.message);syncUI('● No se pudo guardar: '+e.message,'err')}
+ }
+ SYNC.busy=false;btn.disabled=false;
 }
 $('od-refresh').addEventListener('click',function(){var n=$('sesnote');n.textContent='Buscando meses guardados…';odRefresh().then(function(l){if(l)n.textContent=l.length?('Meses guardados en OneDrive: '+l.length+'.'):'No hay meses guardados en esa carpeta todavía.'})});
-$('od-open').addEventListener('click',async function(){
- var nm=$('od-list').value,n=$('sesnote');
- if(!nm){n.textContent='Elija un mes guardado (o presione Actualizar lista).';return}
+async function odOpen(nm){
+ var n=$('sesnote');
  try{n.textContent='Abriendo '+nm+'…';await odResolve();var it=await odGet(nm);
   if(!it||!it['@microsoft.graph.downloadUrl'])throw new Error('no se encontró el archivo en la carpeta');
-  var tx=await (await fetch(it['@microsoft.graph.downloadUrl'])).text();openSession(tx);
+  var so=JSON.parse(await (await fetch(it['@microsoft.graph.downloadUrl'])).text());
+  applySession(so,{noModal:true});syncLink(so,it);n.textContent='Mes abierto: '+MESES[so.mes]+' '+so.anio+'.';
  }catch(e){n.textContent='No se pudo abrir: '+e.message}
-});
+}
+$('od-open').addEventListener('click',function(){var nm=$('od-list').value;if(!nm){$('sesnote').textContent='Elija un mes guardado (o presione Actualizar lista).';return}odOpen(nm)});
 try{var _u=localStorage.getItem('odlink');if(_u)$('sp-site').value=_u}catch(e){}
 $('sp-site').addEventListener('change',function(){OD.drive=null;OD.folder=null});
 $('sp-login').addEventListener('click',function(){
@@ -823,18 +905,35 @@ $('sp-check').addEventListener('click',function(){
  var b=$('sp-check');b.disabled=true;spNote('sp-note','Verificando carpeta…');OD.drive=null;OD.folder=null;
  odRefresh().then(function(l){spNote('sp-note',l?('Carpeta «'+OD.name+'» lista. Meses guardados: '+l.length+'.'):'No se pudo verificar la carpeta. Revise el enlace y que tenga permiso de edición.')}).catch(function(e){spNote('sp-note','No se pudo verificar: '+e.message)}).then(function(){b.disabled=false});
 });
-$('sp-save').addEventListener('click',spSave);
+$('sp-save').addEventListener('click',function(){spSave(false)});
+$('sp-estado').addEventListener('change',function(){markDirty('*')});
+$('sp-resp').addEventListener('change',function(){markDirty('*')});
 function greet(){
  var h=new Date().getHours(),sal=h<12?'Buenos días':(h<19?'Buenas tardes':'Buenas noches'),nm=(curUser().split(' ')[0]||'');
  $('greet-h').textContent=sal+(nm?', '+nm:'')+' 👋';
- $('greet-p').textContent=(state&&state.workers)?'Revisemos el tareo y los viáticos de '+MESES[state.mes]+' '+state.anio:'Cargue el Excel mensual de RR. HH. para comenzar';
+ $('greet-p').textContent=(state&&state.workers)?'Revisemos el tareo y los viáticos de '+MESES[state.mes]+' '+state.anio:(getRol()==='rev'?'Abra el mes que ya fue preparado para revisarlo':'Cargue el Excel mensual de RR. HH. para comenzar');
  $('sp-av').textContent=(nm||'?').charAt(0).toUpperCase();
 }
 function curUser(){var a=pca&&pca.getActiveAccount();return a?(a.name||a.username):''}
 function showLogin(){$('app').classList.add('hide');$('sp').classList.remove('hide')}
-function spNext(){
+function getRol(){var r=document.querySelector('input[name=rol]:checked');return r?r.value:'prep'}
+function applyRol(){
+ var rev=getRol()==='rev';document.body.classList.toggle('rev',rev);
+ document.querySelector('[data-window=carga] span').textContent=rev?'Abrir mes':'Cargar Excel';
+ var h=document.querySelector('#carga h2');if(h)h.textContent=rev?'1. Abrir el mes preparado':'1. Cargar el Excel de RR. HH.';
+ try{localStorage.setItem('rol',getRol())}catch(e){}
  greet();
- if(pca&&pca.getActiveAccount()&&($('sp-site').value||'').trim())odRefresh(true);
+}
+try{var _r=localStorage.getItem('rol');if(_r){var _e=document.querySelector('input[name=rol][value='+_r+']');if(_e)_e.checked=true}}catch(e){}
+document.querySelectorAll('input[name=rol]').forEach(function(x){x.addEventListener('change',applyRol)});
+function spNext(){
+ applyRol();
+ if(pca&&pca.getActiveAccount()&&($('sp-site').value||'').trim())odRefresh(true).then(function(l){
+  if(getRol()==='rev'&&!(state&&state.workers)){
+   if(l&&l.length)odOpen(l[0].name);
+   else $('sesnote').textContent='Todavía no hay un mes guardado en la carpeta. Cuando se guarde uno, presione «Actualizar lista».';
+  }
+ });
  $('sp').classList.add('hide');$('app').classList.remove('hide');
  var w=(state&&state.workers)?'via':'carga';
  document.querySelectorAll('.process-window').forEach(function(x){x.classList.remove('active')});
