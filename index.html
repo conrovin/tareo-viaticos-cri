@@ -77,8 +77,9 @@ td select{padding:4px 6px}td input[type=number]{width:96px;padding:4px 6px}td ou
 .concept-tabs button[aria-selected="true"]{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
 #vt.tab-ali th:nth-child(n+11):nth-child(-n+16),#vt.tab-ali td:nth-child(n+11):nth-child(-n+16){display:none}
 #vt.tab-alo th:nth-child(n+8):nth-child(-n+10),#vt.tab-alo td:nth-child(n+8):nth-child(-n+10),
-#vt.tab-alo th:nth-child(n+14):nth-child(-n+16),#vt.tab-alo td:nth-child(n+14):nth-child(-n+16){display:none}
-#vt.tab-mov th:nth-child(n+8):nth-child(-n+13),#vt.tab-mov td:nth-child(n+8):nth-child(-n+13){display:none}
+#vt.tab-alo th:nth-child(n+14):nth-child(-n+17),#vt.tab-alo td:nth-child(n+14):nth-child(-n+17){display:none}
+#vt.tab-mov th:nth-child(n+8):nth-child(-n+13),#vt.tab-mov td:nth-child(n+8):nth-child(-n+13),
+#vt.tab-mov th:nth-child(17),#vt.tab-mov td:nth-child(17){display:none}
 #vt.tab-ali th:nth-child(6),#vt.tab-ali td:nth-child(6),
 #vt.tab-mov th:nth-child(6),#vt.tab-mov td:nth-child(6){display:none}
 @media(max-width:700px){
@@ -187,6 +188,7 @@ input[type=number],input[type=text],select{padding:8px 10px;font-size:.92rem}
 .syncpill.err{background:var(--errbg);color:var(--err)}
 label.chk{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;color:var(--mut)}
 body.rev .only-prep{display:none!important}
+#rep-t td.n,#rep-t th.n{text-align:right}#rep-t tr.tot td{font-weight:700;background:var(--card);position:sticky;bottom:0;border-top:2px solid var(--line)}#rep-t{font-size:.8rem}#rep-t th,#rep-t td{padding:6px 8px}#rep .row label{display:flex;align-items:center;gap:6px}
 </style>
 </head>
 <body>
@@ -218,7 +220,7 @@ body.rev .only-prep{display:none!important}
 <div class="row" style="margin-top:6px"><button id="sp-go" type="button" disabled>Continuar</button><button id="sp-skip" type="button" class="sec">Continuar sin conexión</button></div>
 </section>
 
-<div id="app" class="hide"><aside id="side"><div class="brand">CRI<small>Control Tareo y Viáticos</small></div><nav class="process-nav" aria-label="Procesos"><button type="button" data-window="carga" aria-current="step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Cargar Excel</span></button><button type="button" data-window="res" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg><span>Revisar tareo</span></button><button type="button" data-window="via" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Viáticos</span></button></nav><div class="who"><div class="me"><span class="av" id="sp-av">?</span><span id="sp-user2">Sin conexión</span></div><button id="sp-out" type="button" class="sec">Iniciar sesión</button></div></aside><div id="content"><header id="greet"><h1 id="greet-h">Hola 👋</h1><p id="greet-p"></p><div id="sync" class="syncpill hide"></div></header>
+<div id="app" class="hide"><aside id="side"><div class="brand">CRI<small>Control Tareo y Viáticos</small></div><nav class="process-nav" aria-label="Procesos"><button type="button" data-window="carga" aria-current="step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Cargar Excel</span></button><button type="button" data-window="res" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg><span>Revisar tareo</span></button><button type="button" data-window="via" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Viáticos</span></button><button type="button" data-window="rep" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Reportes</span></button></nav><div class="who"><div class="me"><span class="av" id="sp-av">?</span><span id="sp-user2">Sin conexión</span></div><button id="sp-out" type="button" class="sec">Iniciar sesión</button></div></aside><div id="content"><header id="greet"><h1 id="greet-h">Hola 👋</h1><p id="greet-p"></p><div id="sync" class="syncpill hide"></div></header>
 <section id="carga" class="process-window">
 <h2>1. Cargar el Excel de RR. HH.</h2>
 <div class="row only-prep">
@@ -249,6 +251,13 @@ body.rev .only-prep{display:none!important}
 </div>
 </section>
 <section id="via" class="process-window hide"><h2>3. Viáticos del mes</h2><div class="row only-prep"><button id="gs" class="sec" type="button">Guardar sesión</button><label><input type="checkbox" id="incs" checked> Incluir sueldos al guardar (sesión y OneDrive)</label></div><p class="mut">Los importes automáticos no se modifican. Si cambia un importe final, escriba el motivo. Key Person, grupo, procedencia y status de tarjeta se guardan en este navegador y se repiten cada mes hasta que usted los cambie.</p><div class="row only-prep" style="margin-bottom:10px"><label class="btn">Cargar sueldos (Excel)<input id="sal" type="file" accept=".xlsx,.xls,.csv"></label><span class="mut" id="salnote">Dos columnas: DNI y Sueldo. Solo se usa para calcular la alimentación a planilla (20 % del sueldo).</span></div><div class="kpis" id="vsum"><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></span>Alimentación</div><div class="kv" id="k_ali">S/ 0.00</div><div class="kd" id="d_ali">Sin ajustes</div></div><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>Alojamiento</div><div class="kv" id="k_alo">S/ 0.00</div><div class="kd" id="d_alo">Sin ajustes</div></div><div class="kpi"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>Movilidad</div><div class="kv" id="k_mov">S/ 0.00</div><div class="kd" id="d_mov">Sin ajustes</div></div><div class="kpi hl"><div class="kh"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Total a pagar</div><div class="kv" id="k_tot">S/ 0.00</div><div class="kd" id="d_tot">Sin ajustes</div></div></div><div class="concept-tabs" role="tablist" aria-label="Conceptos de viáticos"><button type="button" data-concept="ali" role="tab" aria-selected="true">Alimentación</button><button type="button" data-concept="alo" role="tab" aria-selected="false">Alojamiento</button><button type="button" data-concept="mov" role="tab" aria-selected="false">Movilidad</button></div><p class="mut" id="concept-note">Concepto activo: Alimentación. Use las pestañas para revisar cada concepto por separado.</p><div class="wrap" style="max-height:480px"><table id="vt" class="tab-ali"></table></div><div class="row" style="margin-top:12px"><button id="xl" type="button">Descargar Excel de viáticos</button><button id="tx" type="button">Descargar los 3 TXT de viáticos</button><span class="mut" id="xlnote"></span></div><div class="row" style="margin-top:12px"><label>Estado del mes <select id="sp-estado"><option>Abierto</option><option>En revisión</option><option>Cerrado</option></select></label><label>Responsable <input id="sp-resp" type="text" style="width:180px" placeholder="Nombre"></label><button id="sp-save" type="button">Guardar en OneDrive</button><label class="chk"><input type="checkbox" id="sp-auto" checked> Sincronizar automáticamente</label><span class="mut" id="sp-savenote"></span></div></section>
+<section id="rep" class="process-window hide"><h2>4. Reportes e historial</h2>
+<p class="mut">Consulte y descargue los meses guardados en OneDrive: tareo, viáticos e historial de ajustes. Un mes aparece aquí después de guardarse.</p>
+<div class="row"><button id="rep-load" type="button">Actualizar</button><label>Mes <select id="rep-per"><option value="">Todos</option></select></label><label>Buscar <input id="rep-q" type="text" placeholder="DNI o nombre" style="width:180px"></label><span class="mut" id="rep-note"></span></div>
+<div class="concept-tabs" role="tablist" aria-label="Reportes" style="margin-top:12px"><button type="button" data-rep="meses" role="tab" aria-selected="true">Meses guardados</button><button type="button" data-rep="tareo" role="tab" aria-selected="false">Tareo</button><button type="button" data-rep="via" role="tab" aria-selected="false">Viáticos</button><button type="button" data-rep="hist" role="tab" aria-selected="false">Historial de cambios</button></div>
+<div class="wrap" style="max-height:480px;margin-top:10px"><table id="rep-t"></table></div>
+<div class="row" style="margin-top:12px"><button id="rep-xl" type="button">Descargar esta vista (Excel)</button><button id="rep-txt" type="button" class="sec">TXT de tareo del mes</button><button id="rep-mes" type="button" class="sec">Excel completo del mes</button><span class="mut" id="rep-dlnote"></span></div>
+</section>
 </div></div>
 </main>
 
@@ -758,6 +767,105 @@ function odSheet(head,rows,widths){
  ws['!cols']=widths.map(function(w){return {wch:w}});ws['!autofilter']={ref:ws['!ref']};
  return ws;
 }
+
+/* ===== Reportes e historial ===== */
+var REP={data:{},view:'meses',loading:false,cols:[],rows:[]};
+function repLabel(per){var m=String(per).match(/(\d{4})-(\d{2})/);return m?MESES[+m[2]-1]+' '+m[1]:String(per)}
+function repNum(v){v=parseFloat(v);return isNaN(v)?0:Math.round(v*100)/100}
+function repDate(n){if(typeof n!=='number')return String(n||'');var d=new Date(Date.UTC(1899,11,30)+n*86400000);return p2(d.getUTCDate())+'/'+p2(d.getUTCMonth()+1)+'/'+d.getUTCFullYear()}
+function repParse(buf){
+ var w=XLSX.read(buf,{type:'array'}),g=function(n){return w.Sheets[n]?XLSX.utils.sheet_to_json(w.Sheets[n],{defval:''}):[]};
+ return {meses:g('TV_Meses')[0]||{},tareo:g('TV_Tareo'),via:g('TV_Viaticos'),hist:g('TV_Historial')};
+}
+async function repLoad(){
+ var n=$('rep-note');
+ if(REP.loading)return;
+ if(!pca||!pca.getActiveAccount()){n.textContent='Inicie sesión con Microsoft desde la pantalla de inicio para ver los reportes.';repRender();return}
+ REP.loading=true;n.textContent='Leyendo los meses guardados en OneDrive…';
+ try{
+  await odResolve();
+  var r=await gf('GET','/drives/'+OD.drive+'/items/'+OD.folder+'/children?$select=name,lastModifiedDateTime,@microsoft.graph.downloadUrl&$top=200');
+  var files=r.value.filter(function(x){return /^CRI_Tareo_Viaticos_\d{4}-\d{2}\.xlsx$/.test(x.name)});
+  var seen={};
+  for(var i=0;i<files.length;i++){
+   var f=files[i],per=f.name.match(/(\d{4}-\d{2})/)[1];seen[per]=1;
+   if(REP.data[per]&&REP.data[per].lm===f.lastModifiedDateTime)continue;
+   var buf=await (await fetch(f['@microsoft.graph.downloadUrl'])).arrayBuffer();
+   var d=repParse(buf);d.lm=f.lastModifiedDateTime;d.buf=buf;d.name=f.name;REP.data[per]=d;
+  }
+  Object.keys(REP.data).forEach(function(k){if(!seen[k])delete REP.data[k]});
+  var sel=$('rep-per'),cur=sel.value;sel.innerHTML='<option value="">Todos</option>';
+  Object.keys(REP.data).sort().reverse().forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=repLabel(k);sel.appendChild(o)});
+  sel.value=REP.data[cur]?cur:'';
+  n.textContent=files.length?('Meses disponibles: '+files.length+'.'):'Todavía no hay meses guardados en esa carpeta.';
+ }catch(e){n.textContent='No se pudo leer OneDrive: '+e.message}
+ REP.loading=false;repRender();
+}
+function repRender(){
+ var per=$('rep-per').value,q=($('rep-q').value||'').trim().toUpperCase(),pers=Object.keys(REP.data).sort().reverse();
+ if(per)pers=pers.filter(function(k){return k===per});
+ var hit=function(dni,nom){return !q||String(dni).toUpperCase().indexOf(q)>=0||String(nom).toUpperCase().indexOf(q)>=0};
+ var cols=[],rows=[],tot=null,v=REP.view;
+ if(v==='meses'){
+  cols=['Mes','Estado','Responsable','Actualizado','Trabajadores','Marcas','Alimentación','Alojamiento','Movilidad','Total','Ajustes'];
+  tot=[0,0,0,0,0,0];
+  pers.forEach(function(k){var d=REP.data[k],dn={},c={'Alimentación':0,'Alojamiento':0,'Movilidad':0},aj=0;
+   d.tareo.forEach(function(t){dn[t.DNI]=1});
+   d.via.forEach(function(x){c[x.Concepto]=(c[x.Concepto]||0)+repNum(x.MontoFinal);if(repNum(x.Ajuste)!==0)aj++});
+   var t=c['Alimentación']+c['Alojamiento']+c['Movilidad'],m=d.meses;
+   rows.push([repLabel(k),m.Estado||'',m.Responsable||'',m.Actualizado||'',Object.keys(dn).length,d.tareo.length,c['Alimentación'],c['Alojamiento'],c['Movilidad'],t,aj]);
+   tot[0]+=d.tareo.length;tot[1]+=c['Alimentación'];tot[2]+=c['Alojamiento'];tot[3]+=c['Movilidad'];tot[4]+=t;tot[5]+=aj});
+  tot=rows.length>1?['Total','','','','',tot[0],tot[1],tot[2],tot[3],tot[4],tot[5]]:null;
+ }else if(v==='tareo'){
+  cols=['Mes','DNI','Trabajador','Proyecto','Ítem','Días con marca','Detalle de marcas'];
+  pers.forEach(function(k){var g={},o=[];
+   REP.data[k].tareo.forEach(function(t){var e=g[t.DNI];if(!e){e=g[t.DNI]={nom:t.Trabajador,proy:t.Proyecto,item:t.Item,n:0,m:{}};o.push(t.DNI)}e.n++;e.m[t.Marca]=(e.m[t.Marca]||0)+1});
+   o.forEach(function(d){var e=g[d];if(!hit(d,e.nom))return;rows.push([repLabel(k),d,e.nom,e.proy,e.item,e.n,Object.keys(e.m).sort().map(function(z){return z+': '+e.m[z]}).join(' · ')])});
+  });
+ }else if(v==='via'){
+  cols=['Mes','DNI','Trabajador','Alimentación','Alojamiento','Movilidad','Total','Ajustes','Motivo'];
+  tot=[0,0,0,0,0];
+  pers.forEach(function(k){var g={},o=[];
+   REP.data[k].via.forEach(function(x){var e=g[x.DNI];if(!e){e=g[x.DNI]={nom:x.Trabajador,c:{},aj:0,mo:[]};o.push(x.DNI)}
+    e.c[x.Concepto]=(e.c[x.Concepto]||0)+repNum(x.MontoFinal);e.aj+=repNum(x.Ajuste);if(x.Motivo&&e.mo.indexOf(x.Motivo)<0)e.mo.push(x.Motivo)});
+   o.forEach(function(d){var e=g[d];if(!hit(d,e.nom))return;var a=e.c['Alimentación']||0,l=e.c['Alojamiento']||0,m=e.c['Movilidad']||0;
+    rows.push([repLabel(k),d,e.nom,a,l,m,a+l+m,e.aj,e.mo.join(' / ')]);tot[0]+=a;tot[1]+=l;tot[2]+=m;tot[3]+=a+l+m;tot[4]+=e.aj})});
+  tot=rows.length?['Total','','',tot[0],tot[1],tot[2],tot[3],tot[4],'']:null;
+ }else{
+  cols=['Mes','DNI','Trabajador','Concepto','Valor anterior','Valor nuevo','Usuario','Fecha','Motivo'];
+  pers.forEach(function(k){REP.data[k].hist.forEach(function(h){if(!hit(h.DNI,h.Trabajador))return;
+   rows.push([repLabel(k),h.DNI,h.Trabajador,h.Concepto,repNum(h.ValorAnterior),repNum(h.ValorNuevo),h.Usuario,h.Fecha,h.Motivo])})});
+ }
+ REP.cols=cols;REP.rows=rows;REP.tot=tot;
+ var h='<tr>'+cols.map(function(c,i){return '<th'+(rows.length&&typeof rows[0][i]==='number'?' class="n"':'')+'>'+esc(c)+'</th>'}).join('')+'</tr>';
+ if(!rows.length)h+='<tr><td colspan="'+cols.length+'" class="mut">'+(Object.keys(REP.data).length?'Sin resultados para este filtro.':'Sin datos. Presione «Actualizar» para leer los meses guardados en OneDrive.')+'</td></tr>';
+ var MON={meses:[6,7,8,9],tareo:[],via:[3,4,5,6,7],hist:[4,5]}[v];
+ var fmt=function(c,i){return typeof c==='number'?'<td class="n">'+(MON.indexOf(i)>=0?S(c):c)+'</td>':'<td>'+esc(c)+'</td>'};
+ rows.forEach(function(r){h+='<tr>'+r.map(fmt).join('')+'</tr>'});
+ if(tot)h+='<tr class="tot">'+tot.map(function(c,i){return typeof c==='number'?'<td class="n">'+(MON.indexOf(i)>=0?S(c):c)+'</td>':'<td>'+esc(c)+'</td>'}).join('')+'</tr>';
+ $('rep-t').innerHTML=h;
+}
+function repPick(v){REP.view=v;document.querySelectorAll('[data-rep]').forEach(function(x){x.setAttribute('aria-selected',x.dataset.rep===v?'true':'false')});repRender()}
+document.querySelectorAll('[data-rep]').forEach(function(b){b.addEventListener('click',function(){repPick(b.dataset.rep)})});
+$('rep-per').addEventListener('change',repRender);$('rep-q').addEventListener('input',repRender);
+$('rep-load').addEventListener('click',repLoad);
+document.querySelector('[data-window=rep]').addEventListener('click',function(){repRender();if(!Object.keys(REP.data).length)repLoad()});
+$('rep-xl').addEventListener('click',function(){
+ var n=$('rep-dlnote');if(!REP.rows.length){n.textContent='No hay datos para descargar en esta vista.';return}
+ var rows=REP.rows.concat(REP.tot?[REP.tot]:[]),wb=XLSX.utils.book_new(),ttl={meses:'Meses',tareo:'Tareo',via:'Viaticos',hist:'Historial'}[REP.view];
+ XLSX.utils.book_append_sheet(wb,odSheet(REP.cols,rows,REP.cols.map(function(c,i){return Math.min(40,Math.max(10,String(c).length+2,rows.slice(0,50).reduce(function(m,r){return Math.max(m,String(r[i]==null?'':r[i]).length)},0)+2))})),ttl);
+ var per=$('rep-per').value;saveFile('Reporte_'+ttl+'_'+(per||'Todos')+'.xlsx',XLSX.write(wb,{type:'array',bookType:'xlsx'}),n);
+});
+$('rep-txt').addEventListener('click',function(){
+ var n=$('rep-dlnote'),per=$('rep-per').value;if(!per){n.textContent='Elija un mes en la lista para descargar su TXT.';return}
+ var d=REP.data[per];if(!d||!d.tareo.length){n.textContent='Ese mes no tiene marcas de tareo.';return}
+ saveFile('TXT_Tareo_'+per+'.txt',d.tareo.map(function(t){return [t.DNI,t.Proyecto,t.Item,repDate(t.Fecha),t.Marca,'D'].join('|')+'|'}).join('\r\n')+'\r\n',n);
+});
+$('rep-mes').addEventListener('click',function(){
+ var n=$('rep-dlnote'),per=$('rep-per').value;if(!per){n.textContent='Elija un mes en la lista para descargar su Excel.';return}
+ var d=REP.data[per];if(!d){n.textContent='Presione «Actualizar» primero.';return}
+ saveFile(d.name,d.buf,n);
+});
 /* ===== Sincronización entre equipos (guardado automático + actualización) ===== */
 var SYNC={on:false,per:'',etag:null,by:'',at:null,dirty:{},busy:false,t:null,status:'',cls:'ok'};
 function syncAuto(){return $('sp-auto')&&$('sp-auto').checked}
