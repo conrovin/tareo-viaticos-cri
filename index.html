@@ -738,7 +738,20 @@ function odResolve(){
  });
 }
 function odPath(name){return '/drives/'+OD.drive+'/items/'+OD.folder+':/'+encodeURIComponent(name)}
-function odGet(name){return gf('GET',odPath(name)+'?$select=id,name,eTag,lastModifiedDateTime,lastModifiedBy,@microsoft.graph.downloadUrl').catch(function(e){if(e.status===404)return null;throw e})}
+function odGet(name){
+ return gf('GET',odPath(name)+'?$select=id,name,eTag,lastModifiedDateTime,lastModifiedBy,@microsoft.graph.downloadUrl').catch(function(e){if(e.status===404)return null;throw e}).then(function(it){
+  if(it)return it;
+  return gf('GET','/drives/'+OD.drive+'/items/'+OD.folder+'/children?$select=id,name,eTag,lastModifiedDateTime,lastModifiedBy,@microsoft.graph.downloadUrl&$top=200').then(function(r){var l=name.toLowerCase();return (r.value||[]).filter(function(x){return String(x.name).toLowerCase()===l})[0]||null}).catch(function(){return null});
+ });
+}
+async function odRead(it){
+ var u=it['@microsoft.graph.downloadUrl'];
+ if(u){try{var r=await fetch(u);if(r.ok)return r}catch(e){}}
+ if(!it.id)throw new Error('OneDrive no entregó el enlace de descarga de «'+it.name+'».');
+ var t=await tok(),r2=await fetch(GR+'/drives/'+OD.drive+'/items/'+it.id+'/content',{headers:{'Authorization':'Bearer '+t}});
+ if(!r2.ok)throw new Error('No se pudo descargar «'+it.name+'» (error '+r2.status+').');
+ return r2;
+}
 function odPut(name,data,type,etag){return gf('PUT',odPath(name)+':/content',{raw:data,type:type,h:etag?{'If-Match':etag}:null})}
 function odSessions(){
  return odResolve().then(function(){return gf('GET','/drives/'+OD.drive+'/items/'+OD.folder+'/children?$select=name,lastModifiedDateTime&$top=200')}).then(function(r){
@@ -784,13 +797,13 @@ async function repLoad(){
  REP.loading=true;n.textContent='Leyendo los meses guardados en OneDrive…';
  try{
   await odResolve();
-  var r=await gf('GET','/drives/'+OD.drive+'/items/'+OD.folder+'/children?$select=name,lastModifiedDateTime,@microsoft.graph.downloadUrl&$top=200');
+  var r=await gf('GET','/drives/'+OD.drive+'/items/'+OD.folder+'/children?$select=id,name,lastModifiedDateTime,@microsoft.graph.downloadUrl&$top=200');
   var files=r.value.filter(function(x){return /^CRI_Tareo_Viaticos_\d{4}-\d{2}\.xlsx$/.test(x.name)});
   var seen={};
   for(var i=0;i<files.length;i++){
    var f=files[i],per=f.name.match(/(\d{4}-\d{2})/)[1];seen[per]=1;
    if(REP.data[per]&&REP.data[per].lm===f.lastModifiedDateTime)continue;
-   var buf=await (await fetch(f['@microsoft.graph.downloadUrl'])).arrayBuffer();
+   var buf=await (await odRead(f)).arrayBuffer();
    var d=repParse(buf);d.lm=f.lastModifiedDateTime;d.buf=buf;d.name=f.name;REP.data[per]=d;
   }
   Object.keys(REP.data).forEach(function(k){if(!seen[k])delete REP.data[k]});
@@ -899,7 +912,7 @@ function mergeDirty(o){
  o.kp=kp;o.attr=at;o.adj=adj;return o;
 }
 async function syncPull(it){
- var o=JSON.parse(await (await fetch(it['@microsoft.graph.downloadUrl'])).text());
+ var o=JSON.parse(await (await odRead(it)).text());
  if(Object.keys(SYNC.dirty).length)mergeDirty(o);
  applySession(o,{silent:true});
  SYNC.etag=it.eTag;SYNC.by=metaBy(it);SYNC.at=it.lastModifiedDateTime?new Date(it.lastModifiedDateTime):new Date();
@@ -947,9 +960,9 @@ async function spSave(auto){
   }
   var user=curUser(),estado=$('sp-estado').value,resp=($('sp-resp').value||'').trim()||user,now=new Date().toLocaleString('es-PE');
   var ex=await odGet(xname),oldHist=[],oldEstado='';
-  if(ex&&ex['@microsoft.graph.downloadUrl']){
+  if(ex){
    say('Leyendo el archivo anterior…');
-   var buf=await (await fetch(ex['@microsoft.graph.downloadUrl'])).arrayBuffer();
+   var buf=await (await odRead(ex)).arrayBuffer();
    var ow=XLSX.read(buf,{type:'array'});
    if(ow.Sheets.TV_Meses){var rm=XLSX.utils.sheet_to_json(ow.Sheets.TV_Meses,{defval:''});if(rm[0])oldEstado=rm[0].Estado||''}
    if(ow.Sheets.TV_Historial)oldHist=XLSX.utils.sheet_to_json(ow.Sheets.TV_Historial,{defval:''});
@@ -994,8 +1007,8 @@ $('od-refresh').addEventListener('click',function(){var n=$('sesnote');n.textCon
 async function odOpen(nm){
  var n=$('sesnote');
  try{n.textContent='Abriendo '+nm+'…';await odResolve();var it=await odGet(nm);
-  if(!it||!it['@microsoft.graph.downloadUrl'])throw new Error('no se encontró el archivo en la carpeta');
-  var so=JSON.parse(await (await fetch(it['@microsoft.graph.downloadUrl'])).text());
+  if(!it)throw new Error('no se encontró «'+nm+'» en la carpeta «'+OD.name+'». Pulse «Actualizar lista» y vuelva a elegir el mes.');
+  var so=JSON.parse(await (await odRead(it)).text());
   applySession(so,{noModal:true});syncLink(so,it);n.textContent='Mes abierto: '+MESES[so.mes]+' '+so.anio+'.';
  }catch(e){n.textContent='No se pudo abrir: '+e.message}
 }
